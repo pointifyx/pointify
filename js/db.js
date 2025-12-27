@@ -9,7 +9,7 @@ const DB_VERSION = 1;
 class PointifyDB {
     constructor() {
         this.db = null;
-        this.initPromise = this.init();
+        this.initPromise = this.init().then(() => this.seed());
     }
 
     async init() {
@@ -40,7 +40,7 @@ class PointifyDB {
                     usersStore.transaction.oncomplete = () => {
                         const userTransaction = db.transaction(['users'], 'readwrite');
                         const userStore = userTransaction.objectStore('users');
-                        userStore.add({ username: 'admin', password: '123', role: 'admin', name: 'Super Admin' });
+                        userStore.add({ username: 'Admin', password: '123Admin', role: 'admin', name: 'Super Admin' });
                     };
                 }
 
@@ -63,6 +63,32 @@ class PointifyDB {
                     db.createObjectStore('settings', { keyPath: 'key' });
                 }
             };
+        });
+    }
+
+    async seed() {
+        // Ensure Admin Exists
+        try {
+            const db = await this.getDB();
+            const userCount = await this.count('users');
+            if (userCount === 0) {
+                await this.add('users', { username: 'Admin', password: '123Admin', role: 'admin', name: 'Super Admin' });
+                console.log("Seeded Default Admin User");
+            }
+        } catch (e) {
+            console.error("Seeding failed", e);
+        }
+    }
+
+    async count(storeName) {
+        const db = await this.getDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.count();
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
         });
     }
 

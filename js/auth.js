@@ -45,13 +45,16 @@ class AuthSystem {
                 this.onLoginSuccess();
                 errorMsg.classList.add('hidden');
             } else {
-                errorMsg.textContent = "Invalid credentials";
+                errorMsg.textContent = "Invalid credentials. Try: admin / 123";
                 errorMsg.classList.remove('hidden');
+                // Fallback for visibility
+                if (errorMsg.classList.contains('hidden')) alert("Invalid credentials. Try: admin / 123");
             }
         } catch (err) {
             console.error("Login error:", err);
-            errorMsg.textContent = "System error during login";
+            errorMsg.textContent = "System error during login. Check console.";
             errorMsg.classList.remove('hidden');
+            alert("Login System Error: " + err.message);
         }
     }
 

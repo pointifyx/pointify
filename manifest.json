@@ -3,8 +3,8 @@
   "short_name": "Pointify",
   "start_url": "./app.html",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#111827",
+  "background_color": "#FDFBF7",
+  "theme_color": "#DC2626",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3144/3144456.png",
