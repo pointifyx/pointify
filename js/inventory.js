@@ -249,13 +249,17 @@ class InventoryModule {
 
         const productData = {
             name,
-            barcode,
             price,
             costPrice: cost,
             stock,
             alertLevel,
             image: imageBase64
         };
+
+        // Only add barcode if it's not empty, to avoid unique constraint violations on ""
+        if (barcode && barcode.trim() !== "") {
+            productData.barcode = barcode.trim();
+        }
 
         try {
             if (id) {
@@ -285,3 +289,4 @@ class InventoryModule {
 }
 
 export const inventory = new InventoryModule();
+window.inventoryModule = inventory;

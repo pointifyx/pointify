@@ -48,6 +48,44 @@
         .toast {
             animation: slideIn 0.3s ease-out forwards;
         }
+
+        @media print {
+            @page {
+                size: 80mm auto;
+                margin: 0;
+            }
+
+            body {
+                width: 80mm;
+                margin: 0;
+            }
+
+            body>* {
+                display: none !important;
+            }
+
+            #receipt-modal {
+                display: block !important;
+                position: static !important;
+                width: 100% !important;
+                height: auto !important;
+                background: none !important;
+                overflow: visible !important;
+                padding: 0 !important;
+            }
+
+            #receipt-content {
+                width: 100% !important;
+                padding: 5px !important;
+            }
+
+            /* Hide Modal Close and Print Actions */
+            .no-print,
+            #close-receipt,
+            #receipt-modal button {
+                display: none !important;
+            }
+        }
     </style>
     <script>
         window.onerror = function (msg, url, line, col, error) {
@@ -343,6 +381,11 @@
                     btn.classList.add('text-slate-400');
                 }
             });
+
+            // Live Data Sync: Refresh module data when entering view
+            if (viewName === 'pos' && window.posModule) window.posModule.loadProducts();
+            if (viewName === 'inventory' && window.inventoryModule) window.inventoryModule.loadProducts();
+            if (viewName === 'settings' && window.settingsModule) window.settingsModule.loadSettings();
         }
 
         // Global Toast Notification

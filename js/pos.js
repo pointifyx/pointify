@@ -280,30 +280,48 @@ class POSModule {
         const date = new Date(sale.date).toLocaleString();
 
         const logoHtml = this.settings.storeLogo
-            ? `<div class="text-center mb-4"><img src="${this.settings.storeLogo}" class="max-h-16 mx-auto"></div>`
+            ? `<div class="text-center mb-2"><img src="${this.settings.storeLogo}" class="max-h-12 mx-auto filter grayscale"></div>`
             : '';
 
         const itemsHtml = sale.items.map(item => `
-            <div class="flex justify-between mb-1">
-                <span>${item.name} <span class="text-gray-500">x${item.qty}</span></span>
-                <span>${this.settings.currencySymbol}${(item.price * item.qty).toFixed(2)}</span>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 5px;">${item.name}</span>
+            </div>
+             <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 11px; color: #555;">
+                <span>${item.qty} x ${item.price.toFixed(2)}</span>
+                <span>${(item.price * item.qty).toFixed(2)}</span>
             </div>
         `).join('');
 
         content.innerHTML = `
-            ${logoHtml}
-            <div class="text-center font-bold text-lg mb-1 uppercase">${this.settings.storeName}</div>
-            <div class="text-center text-xs text-gray-500 mb-4">${date}<br>Order #${sale.id || 'NEW'}</div>
-            
-            <div class="border-t border-b border-dashed border-gray-300 py-2 my-2 space-y-1">
-                ${itemsHtml}
+            <div style="font-family: 'Courier New', monospace; font-size: 12px; width: 100%; color: black;">
+                ${logoHtml}
+                <div style="text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 2px;">${this.settings.storeName}</div>
+                <div style="text-align: center; margin-bottom: 8px;">
+                    ${this.settings.storeAddress ? `<div>${this.settings.storeAddress}</div>` : ''}
+                    ${this.settings.storePhone ? `<div>Tel: ${this.settings.storePhone}</div>` : ''}
+                </div>
+
+                <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px;">
+                    <div>${date}</div>
+                    <div>Order: #${sale.id || 'NEW'}</div>
+                    <div style="font-weight: bold; margin-top: 2px;">Cashier: ${sale.cashier.toUpperCase()}</div>
+                </div>
+                
+                <div style="border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px;">
+                    ${itemsHtml}
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin-top: 5px;">
+                    <span>TOTAL</span>
+                    <span>${this.settings.currencySymbol}${sale.total.toFixed(2)}</span>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px; font-size: 10px;">
+                    Thank you for your business!
+                    <div style="margin-top: 5px; font-size: 8px; color: #888;">Powered by Pointify Inc : pointify.info</div>
+                </div>
             </div>
-            
-            <div class="flex justify-between font-bold text-base mt-2">
-                <span>TOTAL</span>
-                <span>${this.settings.currencySymbol}${sale.total.toFixed(2)}</span>
-            </div>
-            <div class="text-center text-xs text-gray-400 mt-4">Thank you for your business!</div>
         `;
 
         modal.classList.remove('hidden');
@@ -311,3 +329,4 @@ class POSModule {
 }
 
 export const pos = new POSModule();
+window.posModule = pos;
