@@ -49,6 +49,15 @@
             animation: slideIn 0.3s ease-out forwards;
         }
     </style>
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            alert("Application Error:\n" + msg + "\nLine: " + line);
+            return false;
+        };
+        window.addEventListener('unhandledrejection', function (event) {
+            alert("Unhandled Promise Rejection:\n" + event.reason);
+        });
+    </script>
 </head>
 
 <body class="bg-[#FDFBF7] text-slate-800 h-screen flex overflow-hidden selection:bg-red-200 selection:text-red-900">
@@ -109,6 +118,29 @@
             <p id="login-error"
                 class="text-red-500 text-sm text-center mt-4 hidden bg-red-50 py-2 rounded border border-red-100 animate-pulse font-medium">
             </p>
+
+            <div class="mt-8 pt-6 border-t border-stone-100 text-center">
+                <button onclick="resetSystem()" class="text-xs text-slate-400 hover:text-red-500 underline font-medium">
+                    System not working? Click to Factory Reset
+                </button>
+            </div>
+            <script>
+                async function resetSystem() {
+                    if (confirm("This will Delete ALL data and reset the app. Are you sure?")) {
+                        try {
+                            const req = indexedDB.deleteDatabase('PointifyDB');
+                            req.onsuccess = () => {
+                                alert("System Reset. Reloading...");
+                                window.location.reload();
+                            };
+                            req.onerror = () => alert("Could not delete DB");
+                            req.onblocked = () => alert("Reset blocked. Close other tabs and try again.");
+                        } catch (e) {
+                            alert("Error: " + e.message);
+                        }
+                    }
+                }
+            </script>
         </div>
     </div>
 

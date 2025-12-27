@@ -9,6 +9,7 @@ const DB_VERSION = 1;
 class PointifyDB {
     constructor() {
         this.db = null;
+        // Chain the init with seeding to ensure data exists
         this.initPromise = this.init().then(() => this.seed());
     }
 
@@ -35,13 +36,6 @@ class PointifyDB {
                     const usersStore = db.createObjectStore('users', { keyPath: 'id', autoIncrement: true });
                     usersStore.createIndex('username', 'username', { unique: true });
                     usersStore.createIndex('role', 'role', { unique: false });
-
-                    // Add default admin during upgrade
-                    usersStore.transaction.oncomplete = () => {
-                        const userTransaction = db.transaction(['users'], 'readwrite');
-                        const userStore = userTransaction.objectStore('users');
-                        userStore.add({ username: 'Admin', password: '123Admin', role: 'admin', name: 'Super Admin' });
-                    };
                 }
 
                 // Products Store
@@ -72,6 +66,7 @@ class PointifyDB {
             const db = await this.getDB();
             const userCount = await this.count('users');
             if (userCount === 0) {
+                // Default Credentials: Admin / 123Admin
                 await this.add('users', { username: 'Admin', password: '123Admin', role: 'admin', name: 'Super Admin' });
                 console.log("Seeded Default Admin User");
             }
@@ -197,10 +192,9 @@ class PointifyDB {
                     const product = getRequest.result;
                     if (product) {
                         product.stock = product.stock - item.qty;
-                        if (product.stock < 0) product.stock = 0; // Prevent negative stock for now, or throw error
+                        if (product.stock < 0) product.stock = 0; // Prevent negative stock for now
                         productStore.put(product);
                     } else {
-                        // Product not found, technically should abort, but we'll log it
                         console.error(`Product ${item.id} not found during transaction`);
                         transaction.abort();
                     }
