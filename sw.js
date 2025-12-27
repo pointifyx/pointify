@@ -1,5 +1,5 @@
-const CACHE_NAME = 'pointify-v3';
-const ASSETS = [
+const CACHE_NAME = 'pointify-v4';
+const CORE_ASSETS = [
   './',
   './index.html',
   './app.html',
@@ -9,14 +9,34 @@ const ASSETS = [
   './js/pos.js',
   './js/inventory.js',
   './js/reports.js',
-  './js/settings.js',
+  './js/settings.js'
+];
+
+const EXTERNAL_ASSETS = [
   'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+  'https://cdn-icons-png.flaticon.com/512/3144/3144456.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Critical Assets - Must succeed
+      await cache.addAll(CORE_ASSETS);
+
+      // External Assets - Try best effort (don't fail install if offline/CORS issues)
+      try {
+        await Promise.all(
+          EXTERNAL_ASSETS.map(url =>
+            fetch(url, { mode: 'no-cors' }) // Handle opaque responses
+              .then(res => cache.put(url, res))
+              .catch(e => console.warn('Failed to cache external:', url))
+          )
+        );
+      } catch (e) {
+        console.warn('External assets caching incomplete');
+      }
+    })
   );
 });
 
