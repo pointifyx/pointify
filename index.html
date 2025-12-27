@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointify - The Future of Retail</title>
+    <meta name="description" content="Offline-First, High-Performance POS System for Modern Retail">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        cream: '#FDFBF7',
+                        primary: '#DC2626',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .hero-pattern {
+            background-color: #FDFBF7;
+            background-image: radial-gradient(#E7E5E4 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+    </style>
+</head>
+
+<body class="bg-[#FDFBF7] text-slate-800 selection:bg-red-200 selection:text-red-900 flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-[#FDFBF7]/90 backdrop-blur border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/30">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-extrabold tracking-tight text-slate-900">Pointify</span>
+                </div>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#about" class="text-slate-600 hover:text-red-600 font-medium transition">About</a>
+                    <a href="#contact" class="text-slate-600 hover:text-red-600 font-medium transition">Contact</a>
+                    <a href="./app.html"
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-full font-bold hover:bg-black transition transform hover:scale-105 shadow-xl">
+                        Launch App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-pattern pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden relative">
+        <!-- Abstract Background Shapes -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-red-100 blur-3xl opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-orange-50 blur-3xl opacity-50">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center z-10">
+
+            <div
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-stone-200 text-sm text-red-600 font-semibold mb-8 shadow-sm animate-fade-in-up">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                v1.0 Now Available Offline
+            </div>
+
+            <h1 class="text-5xl md:text-7xl font-black tracking-tight mb-8 text-slate-900">
+                Retail Management <br />
+                <span class="text-red-600">Reimagined.</span>
+            </h1>
+
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-600 mb-12 font-medium">
+                The offline-first POS designed for speed, reliability, and growth. No internet? No problem. Run your
+                business anywhere, anytime.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="./app.html"
+                    class="w-full sm:w-auto px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-lg shadow-xl shadow-red-600/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Launch Terminal
+                </a>
+                <button id="pwa-install-btn"
+                    class="hidden w-full sm:w-auto px-8 py-4 bg-white hover:bg-stone-50 border border-stone-200 text-slate-900 rounded-2xl font-bold text-lg transition flex items-center justify-center gap-2 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Install App
+                </button>
+            </div>
+
+            <!-- Preview Image -->
+            <div
+                class="mt-20 relative rounded-2xl border border-stone-200 bg-white shadow-2xl shadow-stone-200/50 overflow-hidden p-2 md:p-4 max-w-5xl mx-auto transform hover:scale-[1.01] transition duration-500">
+                <div
+                    class="aspect-video rounded-lg bg-stone-50 overflow-hidden relative group border border-stone-100 flex items-center justify-center">
+                    <!-- Simulate Screen UI -->
+                    <div
+                        class="absolute inset-x-0 top-0 h-8 bg-white border-b border-stone-100 flex items-center px-4 gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-stone-300"></div>
+                        <div class="w-3 h-3 rounded-full bg-stone-300"></div>
+                    </div>
+                    <div class="text-slate-400 font-bold text-sm tracking-widest pt-8 uppercase">
+                        Application Preview
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-white border-y border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-black text-slate-900 mb-4">About Pointify</h2>
+                <div class="w-20 h-1 bg-red-600 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-12 text-center">
+                <div>
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Lightning Fast</h3>
+                    <p class="text-slate-500 leading-relaxed">Built with vanilla JavaScript and local databases for
+                        instant interactions. No loading spinners, no waiting.</p>
+                </div>
+                <div>
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Offline First</h3>
+                    <p class="text-slate-500 leading-relaxed">Works completely without internet. Your data is stored
+                        securely on your device and syncs when you're back online.</p>
+                </div>
+                <div>
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Zero Server Costs</h3>
+                    <p class="text-slate-500 leading-relaxed">No expensive cloud subscriptions. Runs in your browser.
+                        You own your data, forever.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content & Location Section -->
+    <section id="contact" class="bg-stone-50 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Location Info -->
+                <div class="space-y-8">
+                    <h2 class="text-3xl font-black text-slate-900">Visit Our HQ</h2>
+                    <p class="text-slate-600 text-lg">We are located in the heart of the Innovation District, building
+                        tools for the next generation of retailers.</p>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm text-red-600 flex-shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900">Location</h4>
+                                <p class="text-slate-500">BBS Mall, Eastleigh, Nairobi</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm text-red-600 flex-shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900">Email Us</h4>
+                                <a href="mailto:contuct@pointify.info"
+                                    class="text-red-600 hover:text-red-700 font-medium">contuct@pointify.info</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Placeholder -->
+                <div class="h-80 bg-white rounded-2xl border border-stone-200 shadow-lg p-2">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.826260171966!2d36.84848937496661!3d-1.2777179987100806!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f16c7a726615f%3A0xe5497298517593c6!2sBBS%20Mall%20Nairobi!5e0!3m2!1sen!2ske!4v1716550000000!5m2!1sen!2ske"
+                        width="100%" height="100%" style="border:0; border-radius: 0.75rem;" allowfullscreen=""
+                        loading="lazy" class="grayscale hover:grayscale-0 transition duration-500">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-stone-200 py-8 text-center mt-auto">
+        <p class="text-slate-400 text-sm">© 2025 Pointify Systems. All rights reserved.</p>
+    </footer>
+
+    <!-- PWA Installation Script -->
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwa-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+            installBtn.classList.add('hidden');
+        });
+    </script>
+</body>
+
+</html>
