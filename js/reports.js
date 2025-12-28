@@ -39,6 +39,12 @@ class ReportsModule {
                             <button id="btn-filter-all" data-filter="all" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-red-600">All</button>
                         </div>
                         
+                        <!-- Manager Scope Toggle -->
+                        <div id="manager-scope-toggle" class="hidden flex bg-stone-100 rounded-lg p-1 ml-2">
+                             <button data-scope="mine" class="scope-btn px-3 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-red-600 transition">My Sales</button>
+                             <button data-scope="all" class="scope-btn px-3 py-1.5 text-xs font-bold rounded-md text-slate-600 hover:bg-white hover:shadow-sm transition">All Sales</button>
+                        </div>
+                        
                         <div class="h-8 w-px bg-stone-200 mx-2"></div>
 
                         <button id="btn-export-csv" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition shadow-sm">
@@ -82,6 +88,7 @@ class ReportsModule {
                                 <tr>
                                     <th class="p-3 border-b border-stone-200">Date</th>
                                     <th class="p-3 border-b border-stone-200">Cashier</th>
+                                    <th class="p-3 border-b border-stone-200">Payment</th>
                                     <th class="p-3 border-b border-stone-200 text-left pl-4">Items</th>
                                     <th class="p-3 border-b border-stone-200 text-right">Total</th>
                                     <th class="p-3 border-b border-stone-200 text-right profit-col">Profit</th>
@@ -128,7 +135,22 @@ class ReportsModule {
                 e.target.classList.add('bg-white', 'shadow-sm', 'text-red-600');
                 e.target.classList.remove('text-slate-600');
 
-                this.generateReport(e.target.dataset.filter);
+            });
+        });
+
+        // Scope Toggle Listeners (Manager)
+        document.querySelectorAll('.scope-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.scope-btn').forEach(b => {
+                    b.classList.remove('bg-white', 'shadow-sm', 'text-red-600');
+                    b.classList.add('text-slate-600');
+                });
+                e.target.classList.add('bg-white', 'shadow-sm', 'text-red-600');
+                e.target.classList.remove('text-slate-600');
+
+                // Re-run report with current time filter but new scope
+                const currentFilter = document.querySelector('.filter-btn.text-red-600')?.dataset.filter || 'all';
+                this.generateReport(currentFilter);
             });
         });
 
@@ -167,30 +189,55 @@ class ReportsModule {
         document.getElementById('report-period-label').textContent = label;
         const user = JSON.parse(sessionStorage.getItem('pointify_user'));
         const isAdmin = user && user.role === 'admin';
+        const isManager = user && user.role === 'manager';
+
+        let managerScope = 'mine'; // Default for manager
+        if (isManager) {
+            document.getElementById('manager-scope-toggle').classList.remove('hidden');
+            const activeScopeBtn = document.querySelector('.scope-btn.text-red-600');
+            if (activeScopeBtn) managerScope = activeScopeBtn.dataset.scope;
+        } else {
+            document.getElementById('manager-scope-toggle').classList.add('hidden');
+        }
 
         // 1. Filter Logic & Role Based UI Adjustments
-        if (!isAdmin && user) {
-            // Cashier Logic
+        // Cashier OR (Manager AND Scope is 'mine')
+        const isRestrictedView = (!isAdmin && !isManager) || (isManager && managerScope === 'mine');
+
+        if (isRestrictedView && user) {
+            // Restricted Logic (Cashier or Manager-My-Sales)
             filteredSales = filteredSales.filter(s => s.cashier === user.username);
 
-            // Hide Restricted Time Filters
+            // Hide Restricted Time Filters (Only for Cashier, Manager can see all times? User said "my sales and trcstionlogs and all sales...". Let's assume Manager CAN see all times if they want, OR restrict times for consistency in "My Sales" mode. 
+            // Request said: "manager reports section... give him features he can filter my sales... and all sales"
+            // Usually "My Sales" acts like a cashier view. Let's keep filters unrestricted for Manager to be safe, or start restricted.
+            // Let's Keep Time filters OPEN for Manager even in My Sales, unless user complains. Cashier gets them hidden.
+
             const btnYear = document.getElementById('btn-filter-year');
             const btnAll = document.getElementById('btn-filter-all');
-            if (btnYear) btnYear.classList.add('hidden');
-            if (btnAll) btnAll.classList.add('hidden');
+
+            if (!isManager) {
+                // Strict restrictions for Cashier
+                if (btnYear) btnYear.classList.add('hidden');
+                if (btnAll) btnAll.classList.add('hidden');
+            } else {
+                // Manager can see years/all even for "My Sales"
+                if (btnYear) btnYear.classList.remove('hidden');
+                if (btnAll) btnAll.classList.remove('hidden');
+            }
 
             // Adjust Cards Metadata
             document.getElementById('label-revenue').textContent = "My Sales";
             document.getElementById('label-profit').textContent = "Items Sold";
             document.getElementById('label-orders').textContent = "My Orders";
 
-            // Change color of second metric (Items sold shouldn't be red)
+            // Change color of second metric
             const metric2 = document.getElementById('report-second-metric');
             metric2.classList.remove('text-red-600');
             metric2.classList.add('text-blue-600');
 
         } else {
-            // Admin Logic
+            // Admin Logic OR Manager-All-Sales
             const btnYear = document.getElementById('btn-filter-year');
             const btnAll = document.getElementById('btn-filter-all');
             if (btnYear) btnYear.classList.remove('hidden');
@@ -211,9 +258,9 @@ class ReportsModule {
         const totalRevenue = filteredSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
         const totalOrders = filteredSales.length;
 
-        // Metric 2 depends on role: Admin = Profit, Cashier = Items Count
+        // Metric 2 depends on view
         let metric2Value = 0;
-        if (isAdmin) {
+        if (!isRestrictedView) {
             metric2Value = filteredSales.reduce((sum, sale) => sum + (sale.netProfit || 0), 0);
             document.getElementById('report-second-metric').textContent = `${this.currencySymbol}${metric2Value.toFixed(2)}`;
         } else {
@@ -233,16 +280,16 @@ class ReportsModule {
 
         if (sortedSales.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic">No sales found for this period.</td></tr>`;
-        } // Continue to render layout things
+        }
 
-        // Hide Admin Specifics (Profit Column / Stats Table)
+        // Hide Admin/Global Specifics
         const adminStatsContainer = document.getElementById('admin-stats-container');
-        if (!isAdmin) {
-            // Cards are REPURPOSED now, not hidden. So we remove the 'hidden' logic from previous step.
+
+        if (isRestrictedView) {
             const revCard = document.getElementById('report-revenue').parentElement;
             const profCard = document.getElementById('report-second-metric').parentElement;
-            if (revCard) revCard.classList.remove('hidden'); // Show My Sales
-            if (profCard) profCard.classList.remove('hidden'); // Show Items Sold
+            if (revCard) revCard.classList.remove('hidden');
+            if (profCard) profCard.classList.remove('hidden');
 
             // Hide profit column in header
             document.querySelectorAll('.profit-col').forEach(el => el.classList.add('hidden'));
@@ -257,11 +304,16 @@ class ReportsModule {
 
             document.querySelectorAll('.profit-col').forEach(el => el.classList.remove('hidden'));
 
+            // Employee Stats: Visible for Admin OR Manager-All-Sales
             if (adminStatsContainer) {
                 adminStatsContainer.classList.remove('hidden');
                 this.renderEmployeeStats(filteredSales);
             }
         }
+
+        // Helper to format rows handles the Profit cell visibility based on isRestrictedView internally if we pass it, or we rely on the logic below.
+        // Actually, the loop below uses 'isAdmin' for profit cell. We need to update that to 'isRestrictedView'.
+        const showProfit = !isRestrictedView;
 
         sortedSales.forEach(sale => {
             const tr = document.createElement('tr');
@@ -280,7 +332,7 @@ class ReportsModule {
                 </div>
             `}).join('');
 
-            const profitCell = isAdmin
+            const profitCell = showProfit
                 ? `<td class="p-3 text-right font-bold text-green-600 align-top profit-col">${this.currencySymbol}${(sale.netProfit || 0).toFixed(2)}</td>`
                 : `<td class="hidden profit-col"></td>`;
 
@@ -290,6 +342,9 @@ class ReportsModule {
                     ${sale.customer ? `<div class="font-bold text-slate-700 mb-1">${sale.customer}</div>` : ''}
                     <div class="text-xs">Cashier: ${sale.cashier || '-'}</div>
                 </td>
+                <td class="p-3 text-slate-600 font-bold text-xs align-top uppercase">
+                    ${sale.paymentMethod || 'CASH'}
+                </td>
                 <td class="p-3 text-slate-500 text-xs align-top bg-slate-50 rounded p-2 border border-slate-100 min-w-[200px]">
                     ${itemsList}
                 </td>
@@ -298,6 +353,7 @@ class ReportsModule {
             `;
             tbody.appendChild(tr);
         });
+
     }
 
     renderEmployeeStats(sales) {
@@ -337,13 +393,16 @@ class ReportsModule {
 
         // CSV Header
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Date,Order ID,Cashier,Items Count,Total,Net Profit\n";
+        csvContent += "Date,Order ID,Cashier,Payment Method,Items Count,Total,Net Profit\n";
 
         // CSV Rows
         this.currentData.forEach(row => {
-            const date = new Date(row.date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' }).replace(',', '');
+            const d = new Date(row.date);
+            const dateStr = d.toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(',', '');
+
             const items = row.items.reduce((acc, i) => acc + i.qty, 0);
-            csvContent += `${date},${row.id || 'N/A'},${row.cashier},${items},${row.total},${row.netProfit}\n`;
+            const payment = row.paymentMethod || 'CASH';
+            csvContent += `${dateStr},${row.id || 'N/A'},${row.cashier},${payment},${items},${row.total.toFixed(2)},${(row.netProfit || 0).toFixed(2)}\n`;
         });
 
         // Download Trigger

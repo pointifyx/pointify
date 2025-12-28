@@ -4,7 +4,7 @@
  */
 
 const DB_NAME = 'PointifyDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 class PointifyDB {
     constructor() {

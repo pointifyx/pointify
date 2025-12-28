@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pointify-v4';
+const CACHE_NAME = 'pointify-v5';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -19,6 +19,7 @@ const EXTERNAL_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force immediate activation
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
       // Critical Assets - Must succeed
@@ -42,13 +43,16 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    })
+    Promise.all([
+      clients.claim(), // Take control of all clients immediately
+      caches.keys().then((keys) => {
+        return Promise.all(
+          keys.map((key) => {
+            if (key !== CACHE_NAME) return caches.delete(key);
+          })
+        );
+      })
+    ])
   );
 });
 

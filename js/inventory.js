@@ -151,9 +151,9 @@ class InventoryModule {
 
             // Permissions Check
             const user = JSON.parse(sessionStorage.getItem('pointify_user'));
-            const isAdmin = user && user.role === 'admin';
+            const canEdit = user && (user.role === 'admin' || user.role === 'manager');
 
-            const editBtnHtml = isAdmin
+            const editBtnHtml = canEdit
                 ? `<button class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 opacity-0 group-hover:opacity-100 transition edit-btn font-medium">Edit</button>`
                 : `<span class="text-xs text-slate-400 italic">View Only</span>`;
 
@@ -176,8 +176,8 @@ class InventoryModule {
                 </td>
              `;
 
-            // Click row to edit ONLY if admin, otherwise maybe just show details or do nothing
-            if (isAdmin) {
+            // Click row to edit ONLY if admin/manager
+            if (canEdit) {
                 row.addEventListener('click', () => this.openModal(p));
             }
             tbody.appendChild(row);

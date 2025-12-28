@@ -59,9 +59,17 @@ class POSModule {
 
                     <!-- Totals & Checkout -->
                     <div class="p-4 bg-stone-50 border-t border-stone-200 space-y-3">
-                         <div>
                             <input type="text" id="customer-name" placeholder="Customer Name (Optional)" class="w-full bg-white border border-stone-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none mb-2">
                          </div>
+                         
+                         <!-- Payment Method Selector -->
+                         <div class="mb-2">
+                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Payment Method</label>
+                             <div class="flex flex-wrap gap-2" id="payment-methods-container">
+                                 <!-- Dynamic Payment Buttons -->
+                             </div>
+                         </div>
+                         
                          <div class="flex justify-between text-slate-500 text-sm">
                             <span>Subtotal</span>
                             <span id="cart-subtotal" class="font-mono text-slate-800">0.00</span>
@@ -79,6 +87,52 @@ class POSModule {
 
 
         `;
+
+        this.renderPaymentButtons();
+    }
+
+    renderPaymentButtons() {
+        const container = document.getElementById('payment-methods-container');
+        if (!container) return;
+
+        const containerParent = container.parentElement;
+        // Ensure the parent label is visible if we have methods, or handled gracefully
+
+        const country = this.settings.storeCountry || 'Kenya';
+        const s = this.settings;
+        let methods = [];
+
+        // Always add CASH
+        methods.push({ id: 'CASH', label: 'CASH', color: 'green' });
+
+        if (country === 'Kenya') {
+            if (s.mpesaPaybill || s.mpesaBuyGoods || s.mpesaAgent) {
+                methods.push({ id: 'MPESA', label: 'M-PESA', color: 'blue' });
+            }
+        } else if (country === 'Somalia') {
+            if (s.somaliaEVC) methods.push({ id: 'EVC Plus', label: 'EVC+', color: 'blue' });
+            if (s.somaliaJeeb) methods.push({ id: 'Jeeb', label: 'Jeeb', color: 'purple' });
+            if (s.somaliaEdahab) methods.push({ id: 'e-Dahab', label: 'e-Dahab', color: 'yellow' });
+            if (s.somaliaSalaam) methods.push({ id: 'Salaam', label: 'Salaam', color: 'slate' });
+            if (s.somaliaMerchant) methods.push({ id: 'Merchant', label: 'Merchant', color: 'red' });
+        } else if (country === 'Uganda') {
+            if (s.ugandaAirtel) methods.push({ id: 'Airtel Money', label: 'Airtel', color: 'red' });
+            if (s.ugandaMTN) methods.push({ id: 'MTN MoMo', label: 'MTN', color: 'yellow' });
+            if (s.ugandaOther) methods.push({ id: 'Other', label: 'Other', color: 'slate' });
+        } else {
+            // Others/Default
+            methods.push({ id: 'Card', label: 'Card', color: 'blue' });
+            methods.push({ id: 'Other', label: 'Other', color: 'slate' });
+        }
+
+        container.innerHTML = methods.map((m, index) => `
+             <label class="cursor-pointer flex-1 min-w-[30%]">
+                 <input type="radio" name="payment-method" value="${m.id}" ${index === 0 ? 'checked' : ''} class="peer sr-only">
+                 <div class="text-center py-2 border border-stone-200 rounded text-xs font-bold text-slate-600 peer-checked:bg-${m.color}-50 peer-checked:text-${m.color}-700 peer-checked:border-${m.color}-200 transition hover:bg-stone-50">
+                     ${m.label}
+                 </div>
+             </label>
+        `).join('');
     }
 
     renderProductGrid(searchTerm = '') {
@@ -311,13 +365,16 @@ class POSModule {
         const total = this.cart.reduce((sum, item) => sum + ((item.price - (item.discount || 0)) * item.qty), 0);
         const customerName = document.getElementById('customer-name').value.trim() || 'Walk-in Customer';
 
+        // Get Payment Method
+        const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+
         const saleData = {
             date: new Date(),
             items: this.cart,
             total: total,
             customer: customerName,
             cashier: JSON.parse(sessionStorage.getItem('pointify_user'))?.username || 'Unknown',
-            paymentMethod: 'CASH' // Simplified for MVP
+            paymentMethod: paymentMethod
         };
 
         try {
@@ -326,6 +383,8 @@ class POSModule {
             this.generateReceipt(saleData);
             this.cart = [];
             this.renderCart();
+            // Clear Customer Name for next sale
+            document.getElementById('customer-name').value = '';
             await this.loadProducts(); // Reload stock
         } catch (error) {
             console.error(error);
@@ -392,6 +451,13 @@ class POSModule {
                     <span>${this.settings.currencySymbol}${sale.total.toFixed(2)}</span>
                 </div>
                 
+                <div style="margin-top: 10px; border-top: 1px dashed #000; pt-2;">
+                    <div style="font-weight: bold; font-size: 11px;">Payment: ${sale.paymentMethod}</div>
+                    <div style="font-size: 10px; margin-top: 2px;">
+                        ${this.getPaymentDetailsHtml(sale.paymentMethod)}
+                    </div>
+                </div>
+                
                 <div style="text-align: center; margin-top: 15px; font-size: 10px;">
                     Thank you for your shopping!
                      <div style="margin-top: 5px; font-size: 8px; color: #888;">Powered by Pointify Inc</div>
@@ -411,6 +477,28 @@ class POSModule {
         document.getElementById('close-receipt-btn').addEventListener('click', () => {
             modal.classList.add('hidden');
         });
+    }
+
+    getPaymentDetailsHtml(method) {
+        const s = this.settings;
+        let html = '';
+
+        if (method === 'MPESA') {
+            if (s.mpesaPaybill) html += `<div>Paybill: <b>${s.mpesaPaybill}</b></div>`;
+            if (s.mpesaAccount) html += `<div>Account: <b>${s.mpesaAccount}</b></div>`;
+            if (s.mpesaBuyGoods) html += `<div>Buy Goods: <b>${s.mpesaBuyGoods}</b></div>`;
+            if (s.mpesaAgent) html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
+        }
+        else if (method === 'EVC Plus' && s.somaliaEVC) html += `<div>EVC+: <b>${s.somaliaEVC}</b></div>`;
+        else if (method === 'Jeeb' && s.somaliaJeeb) html += `<div>Jeeb: <b>${s.somaliaJeeb}</b></div>`;
+        else if (method === 'e-Dahab' && s.somaliaEdahab) html += `<div>e-Dahab: <b>${s.somaliaEdahab}</b></div>`;
+        else if (method === 'Salaam' && s.somaliaSalaam) html += `<div>Salaam Acc: <b>${s.somaliaSalaam}</b></div>`;
+        else if (method === 'Merchant' && s.somaliaMerchant) html += `<div>Merchant: <b>${s.somaliaMerchant}</b></div>`;
+        else if (method === 'Airtel Money' && s.ugandaAirtel) html += `<div>Airtel Merch: <b>${s.ugandaAirtel}</b></div>`;
+        else if (method === 'MTN MoMo' && s.ugandaMTN) html += `<div>MTN Merch: <b>${s.ugandaMTN}</b></div>`;
+        else if (method === 'Other' && s.ugandaOther) html += `<div>Info: <b>${s.ugandaOther}</b></div>`;
+
+        return html;
     }
 }
 

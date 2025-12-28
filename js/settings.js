@@ -7,7 +7,26 @@ class SettingsModule {
             storeName: 'My Store',
             currencySymbol: '$',
             currencyCode: 'USD',
-            storeLogo: null // Base64
+            storeLogo: null, // Base64
+            storeCountry: 'Kenya', // Default: Kenya, Somalia, Uganda, Others
+
+            // Kenya (M-Pesa)
+            mpesaPaybill: '',
+            mpesaAccount: '',
+            mpesaBuyGoods: '',
+            mpesaAgent: '',
+
+            // Somalia (EVC, Jeeb, e-Dahab, Salaam)
+            somaliaEVC: '',
+            somaliaJeeb: '',
+            somaliaEdahab: '',
+            somaliaSalaam: '',
+            somaliaMerchant: '',
+
+            // Uganda (Airtel, MTN)
+            ugandaAirtel: '',
+            ugandaMTN: '',
+            ugandaOther: ''
         };
         this.init();
     }
@@ -53,15 +72,106 @@ class SettingsModule {
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
                                 <label class="block text-sm font-bold text-slate-500 mb-1">Currency Symbol</label>
                                 <input type="text" id="setting-currency-symbol" value="${this.config.currencySymbol}" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none font-medium">
                             </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 mb-1">Country</label>
+                                <select id="setting-country" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none font-medium">
+                                    <option value="Kenya" ${this.config.storeCountry === 'Kenya' ? 'selected' : ''}>Kenya</option>
+                                    <option value="Somalia" ${this.config.storeCountry === 'Somalia' ? 'selected' : ''}>Somalia</option>
+                                    <option value="Uganda" ${this.config.storeCountry === 'Uganda' ? 'selected' : ''}>Uganda</option>
+                                    <option value="Others" ${this.config.storeCountry === 'Others' ? 'selected' : ''}>Others</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-slate-500 mb-1">Currency Code</label>
                                 <input type="text" id="setting-currency-code" value="${this.config.currencyCode}" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none font-medium">
                             </div>
                         </div>
+                        
+                        <!-- Multi-Country Electronic Money Settings -->
+                        <div class="border-t border-stone-100 pt-4 mt-2">
+                            <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">Electronic Money Configuration</h3>
+                            
+                            <!-- KENYA -->
+                            <div id="fields-kenya" class="country-fields ${this.config.storeCountry !== 'Kenya' ? 'hidden' : ''}">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Paybill Number</label>
+                                        <input type="text" id="setting-paybill" value="${this.config.mpesaPaybill || ''}" placeholder="e.g. 247247" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Account No. (For Paybill)</label>
+                                        <input type="text" id="setting-paybill-acc" value="${this.config.mpesaAccount || ''}" placeholder="e.g. Store123" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Buy Goods / Till No.</label>
+                                        <input type="text" id="setting-buygoods" value="${this.config.mpesaBuyGoods || ''}" placeholder="e.g. 123456" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Agent Number</label>
+                                        <input type="text" id="setting-agent" value="${this.config.mpesaAgent || ''}" placeholder="e.g. 987654" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SOMALIA -->
+                            <div id="fields-somalia" class="country-fields ${this.config.storeCountry !== 'Somalia' ? 'hidden' : ''}">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">EVC Plus Number</label>
+                                        <input type="text" id="setting-som-evc" value="${this.config.somaliaEVC || ''}" placeholder="e.g. 0615..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Jeeb Number</label>
+                                        <input type="text" id="setting-som-jeeb" value="${this.config.somaliaJeeb || ''}" placeholder="Jeeb No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">e-Dahab Number</label>
+                                        <input type="text" id="setting-som-edahab" value="${this.config.somaliaEdahab || ''}" placeholder="e-Dahab No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Salaam Bank Account</label>
+                                        <input type="text" id="setting-som-salaam" value="${this.config.somaliaSalaam || ''}" placeholder="Account No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Merchant Account</label>
+                                        <input type="text" id="setting-som-merchant" value="${this.config.somaliaMerchant || ''}" placeholder="Merchant ID" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- UGANDA -->
+                            <div id="fields-uganda" class="country-fields ${this.config.storeCountry !== 'Uganda' ? 'hidden' : ''}">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Airtel Money Merchant</label>
+                                        <input type="text" id="setting-ug-airtel" value="${this.config.ugandaAirtel || ''}" placeholder="Merchant Code" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">MTN Mobile Money</label>
+                                        <input type="text" id="setting-ug-mtn" value="${this.config.ugandaMTN || ''}" placeholder="Merchant Code" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-yellow-500 outline-none font-medium">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Other Payment Info</label>
+                                        <input type="text" id="setting-ug-other" value="${this.config.ugandaOther || ''}" placeholder="Other Instructions" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-slate-500 outline-none font-medium">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-bold text-slate-500 mb-1">Store Logo (Print Header)</label>
                             <input type="file" id="setting-logo" accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-500 pointer text-slate-500
@@ -186,7 +296,27 @@ class SettingsModule {
             const phone = document.getElementById('setting-phone').value;
             const address = document.getElementById('setting-address').value;
             const sym = document.getElementById('setting-currency-symbol').value;
+            const country = document.getElementById('setting-country').value;
             const code = document.getElementById('setting-currency-code').value;
+
+            // Kenya Values
+            const paybill = document.getElementById('setting-paybill').value;
+            const paybillAcc = document.getElementById('setting-paybill-acc').value;
+            const buygoods = document.getElementById('setting-buygoods').value;
+            const agent = document.getElementById('setting-agent').value;
+
+            // Somalia Values
+            const somEvc = document.getElementById('setting-som-evc').value;
+            const somJeeb = document.getElementById('setting-som-jeeb').value;
+            const somEdahab = document.getElementById('setting-som-edahab').value;
+            const somSalaam = document.getElementById('setting-som-salaam').value;
+            const somMerchant = document.getElementById('setting-som-merchant').value;
+
+            // Uganda Values
+            const ugAirtel = document.getElementById('setting-ug-airtel').value;
+            const ugMtn = document.getElementById('setting-ug-mtn').value;
+            const ugOther = document.getElementById('setting-ug-other').value;
+
             const fileInput = document.getElementById('setting-logo');
 
             let logoBase64 = this.config.storeLogo;
@@ -195,17 +325,60 @@ class SettingsModule {
                 logoBase64 = await this.fileToBase64(fileInput.files[0]);
             }
 
-            await db.put('settings', { key: 'storeName', value: name });
-            await db.put('settings', { key: 'storePhone', value: phone });
-            await db.put('settings', { key: 'storeAddress', value: address });
-            await db.put('settings', { key: 'currencySymbol', value: sym });
-            await db.put('settings', { key: 'currencyCode', value: code });
-            if (logoBase64) await db.put('settings', { key: 'storeLogo', value: logoBase64 });
+            try {
+                await db.put('settings', { key: 'storeName', value: name });
+                await db.put('settings', { key: 'storePhone', value: phone });
+                await db.put('settings', { key: 'storeAddress', value: address });
+                await db.put('settings', { key: 'currencySymbol', value: sym });
+                await db.put('settings', { key: 'storeCountry', value: country });
+                await db.put('settings', { key: 'currencyCode', value: code });
 
-            window.showToast('Settings Saved Successfully');
-            // Reload to update local config state
-            await this.loadSettings();
-            this.render(); // Re-render to show updated image
+                // Save Kenya
+                await db.put('settings', { key: 'mpesaPaybill', value: paybill });
+                await db.put('settings', { key: 'mpesaAccount', value: paybillAcc });
+                await db.put('settings', { key: 'mpesaBuyGoods', value: buygoods });
+                await db.put('settings', { key: 'mpesaAgent', value: agent });
+
+                // Save Somalia
+                await db.put('settings', { key: 'somaliaEVC', value: somEvc });
+                await db.put('settings', { key: 'somaliaJeeb', value: somJeeb });
+                await db.put('settings', { key: 'somaliaEdahab', value: somEdahab });
+                await db.put('settings', { key: 'somaliaSalaam', value: somSalaam });
+                await db.put('settings', { key: 'somaliaMerchant', value: somMerchant });
+
+                // Save Uganda
+                await db.put('settings', { key: 'ugandaAirtel', value: ugAirtel });
+                await db.put('settings', { key: 'ugandaMTN', value: ugMtn });
+                await db.put('settings', { key: 'ugandaOther', value: ugOther });
+
+                if (logoBase64) {
+                    await db.put('settings', { key: 'storeLogo', value: logoBase64 });
+                    // Update local config immediately so we don't need full reload for logic
+                    this.config.storeLogo = logoBase64;
+
+                    // Manually update the image tag if it exists, or append it
+                    const container = document.getElementById('setting-logo').parentNode;
+                    let img = container.querySelector('img');
+                    if (img) {
+                        img.src = logoBase64;
+                    } else {
+                        img = document.createElement('img');
+                        img.src = logoBase64;
+                        img.className = "h-16 mt-4 rounded border border-slate-200 p-1";
+                        container.appendChild(img);
+                    }
+                }
+
+                console.log('Settings Saved Successfully');
+                window.showToast('Settings Saved Successfully');
+
+                // FORCE FULL RELOAD OF SETTINGS MODULE to ensure UI reflects DB
+                await this.init();
+                console.log('Settings re-initialized');
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+                window.showToast('Failed to save settings. Please try again.', 'error');
+            }
         });
 
         // Profile Update Handler
@@ -279,6 +452,18 @@ class SettingsModule {
 
         // Initialize user list
         this.loadUsers();
+
+        // Country Toggle
+        const countrySelect = document.getElementById('setting-country');
+        if (countrySelect) {
+            countrySelect.addEventListener('change', (e) => {
+                const val = e.target.value;
+                document.querySelectorAll('.country-fields').forEach(el => el.classList.add('hidden'));
+                if (val === 'Kenya') document.getElementById('fields-kenya')?.classList.remove('hidden');
+                if (val === 'Somalia') document.getElementById('fields-somalia')?.classList.remove('hidden');
+                if (val === 'Uganda') document.getElementById('fields-uganda')?.classList.remove('hidden');
+            });
+        }
     }
 
     async loadUsers() {
