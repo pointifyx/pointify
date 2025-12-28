@@ -27,6 +27,7 @@ class ReportsModule {
                             <button data-filter="today" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition text-slate-600">Today</button>
                             <button data-filter="week" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition text-slate-600">This Week</button>
                             <button data-filter="month" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition text-slate-600">This Month</button>
+                            <button data-filter="year" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition text-slate-600">This Year</button>
                             <button data-filter="all" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-red-600">All</button>
                         </div>
                         
@@ -129,6 +130,10 @@ class ReportsModule {
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
             filteredSales = sales.filter(s => new Date(s.date).getTime() >= startOfMonth);
             label = "This Month";
+        } else if (filter === 'year') {
+            const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+            filteredSales = sales.filter(s => new Date(s.date).getTime() >= startOfYear);
+            label = "This Year";
         }
 
         document.getElementById('report-period-label').textContent = label;
