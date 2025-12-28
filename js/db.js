@@ -11,6 +11,17 @@ class PointifyDB {
         this.db = null;
         // Chain the init with seeding to ensure data exists
         this.initPromise = this.init().then(() => this.seed());
+
+        // Request Persistent Storage
+        if (navigator.storage && navigator.storage.persist) {
+            navigator.storage.persist().then(granted => {
+                if (granted) {
+                    console.log("Storage will not be cleared except by explicit user action");
+                } else {
+                    console.warn("Storage may be cleared by the UA under storage pressure.");
+                }
+            });
+        }
     }
 
     async init() {

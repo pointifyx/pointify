@@ -291,7 +291,18 @@ class SettingsModule {
 
         users.forEach(u => {
             const isMe = currentUser && currentUser.id === u.id;
+            const isAdmin = u.username.toLowerCase() === 'admin';
             const row = document.createElement('tr');
+
+            let actionHtml = '';
+            if (isAdmin) {
+                actionHtml = '<span class="text-xs text-red-400 italic font-bold">Protected</span>';
+            } else if (isMe) {
+                actionHtml = '<span class="text-xs text-slate-400 italic">You</span>';
+            } else {
+                actionHtml = `<button class="text-red-500 hover:text-red-700 font-bold text-xs delete-user-btn" data-id="${u.id}">Remove</button>`;
+            }
+
             row.innerHTML = `
                 <td class="p-3 font-medium text-slate-700">
                     <div>${u.name}</div>
@@ -301,7 +312,7 @@ class SettingsModule {
                     <span class="text-xs font-bold px-2 py-1 rounded ${u.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'} uppercase">${u.role}</span>
                 </td>
                 <td class="p-3 text-right">
-                    ${!isMe ? `<button class="text-red-500 hover:text-red-700 font-bold text-xs delete-user-btn" data-id="${u.id}">Remove</button>` : '<span class="text-xs text-slate-400 italic">You</span>'}
+                    ${actionHtml}
                 </td>
             `;
             list.appendChild(row);

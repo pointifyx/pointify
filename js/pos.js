@@ -233,6 +233,38 @@ class POSModule {
             }, 300);
         });
 
+        // Barcode Scanner/Keyboard Support (Enter Key)
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (!query) return;
+
+                // 1. Try Exact Barcode Match first (Priority)
+                const perfectMatch = this.products.find(p => p.barcode === query);
+                if (perfectMatch) {
+                    this.addToCart(perfectMatch);
+                    searchInput.value = ''; // Clear for next scan
+                    this.renderProductGrid(''); // Reset view
+                    window.showToast('Item Scanned', 'success');
+                    return;
+                }
+
+                // 2. If no barcode match, and only 1 filtered result exists, select it
+                const filtered = this.products.filter(p =>
+                    p.name.toLowerCase().includes(query.toLowerCase()) ||
+                    (p.barcode && p.barcode.includes(query))
+                );
+
+                if (filtered.length === 1) {
+                    this.addToCart(filtered[0]);
+                    searchInput.value = '';
+                    this.renderProductGrid('');
+                    return;
+                }
+            }
+        });
+
         document.getElementById('clear-cart').addEventListener('click', () => {
             if (confirm("Clear cart?")) {
                 this.cart = [];
@@ -322,9 +354,19 @@ class POSModule {
                     <div style="margin-top: 5px; font-size: 8px; color: #888;">Powered by Pointify Inc : pointify.info</div>
                 </div>
             </div>
+            
+            <div class="mt-6 flex gap-3 no-print">
+                <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-black transition">Print Receipt</button>
+                <button id="close-receipt-btn" class="flex-1 bg-stone-100 text-slate-800 py-3 rounded-lg font-bold hover:bg-stone-200 transition">Close</button>
+            </div>
         `;
 
         modal.classList.remove('hidden');
+
+        // Dynamic bind for the specific button created above
+        document.getElementById('close-receipt-btn').addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
     }
 }
 
