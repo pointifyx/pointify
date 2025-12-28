@@ -59,6 +59,9 @@ class POSModule {
 
                     <!-- Totals & Checkout -->
                     <div class="p-4 bg-stone-50 border-t border-stone-200 space-y-3">
+                         <div>
+                            <input type="text" id="customer-name" placeholder="Customer Name (Optional)" class="w-full bg-white border border-stone-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none mb-2">
+                         </div>
                          <div class="flex justify-between text-slate-500 text-sm">
                             <span>Subtotal</span>
                             <span id="cart-subtotal" class="font-mono text-slate-800">0.00</span>
@@ -162,7 +165,8 @@ class POSModule {
         let subtotal = 0;
 
         this.cart.forEach(item => {
-            const itemTotal = item.price * item.qty;
+            const price = item.price - (item.discount || 0);
+            const itemTotal = price * item.qty;
             subtotal += itemTotal;
 
             const div = document.createElement('div');
@@ -170,15 +174,21 @@ class POSModule {
             div.innerHTML = `
                 <div class="flex-1 min-w-0">
                     <div class="text-sm font-bold text-slate-700 truncate">${item.name}</div>
-                    <div class="text-xs text-slate-500 font-mono">${this.settings.currencySymbol}${item.price} x ${item.qty}</div>
+                    <div class="text-xs text-slate-500 font-mono">
+                        ${this.settings.currencySymbol}${item.price} x ${item.qty}
+                        ${item.discount ? `<span class="text-red-500 ml-1">(-${this.settings.currencySymbol}${item.discount})</span>` : ''}
+                    </div>
                 </div>
                 <div class="font-bold text-sm text-red-600 w-16 text-right font-mono">${this.settings.currencySymbol}${itemTotal.toFixed(2)}</div>
                 
-                <div class="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition">
+                <div class="flex items-center gap-1 ml-2 group-hover:opacity-100 transition">
+                     <button class="w-6 h-6 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold btn-discount" title="Add Discount">%</button>
                      <button class="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 text-slate-600 flex items-center justify-center text-xs btn-minus font-bold">-</button>
                      <button class="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 text-slate-600 flex items-center justify-center text-xs btn-plus font-bold">+</button>
                 </div>
             `;
+
+            div.querySelector('.btn-discount').onclick = () => this.promptDiscount(item);
 
             div.querySelector('.btn-minus').onclick = () => this.updateQty(item.id, -1);
             div.querySelector('.btn-plus').onclick = () => this.updateQty(item.id, 1);
@@ -202,6 +212,31 @@ class POSModule {
     cleanPrice(val) {
         return parseFloat(val.toString().replace(/[^0-9.]/g, '')) || 0;
     }
+
+    promptDiscount(item) {
+        const discountStr = prompt(`Enter discount amount for ${item.name} (Max: ${(item.price - (item.costPrice || 0) - 1).toFixed(2)}):`, item.discount || 0);
+        if (discountStr === null) return;
+
+        const discount = parseFloat(discountStr);
+        if (isNaN(discount) || discount < 0) {
+            window.showToast('Invalid discount amount', 'error');
+            return;
+        }
+
+        // Validate: Price - Discount > Cost Price
+        // Assuming we want at least 1 unit of currency profit or just > cost
+        // User Requirement: "cant make discount of lessthan or equal the cost of item" -> Price - Discount > Cost
+        const cost = item.costPrice || 0;
+        if ((item.price - discount) <= cost) {
+            window.showToast(`Discount too high! Price must be greater than Cost (${this.settings.currencySymbol}${cost})`, 'error');
+            return;
+        }
+
+        item.discount = discount;
+        this.renderCart();
+    }
+
+
 
     bindEvents() {
         // Search Listener
@@ -272,12 +307,15 @@ class POSModule {
     }
 
     async processCheckout() {
-        const total = this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        // Recalculate total to be safe
+        const total = this.cart.reduce((sum, item) => sum + ((item.price - (item.discount || 0)) * item.qty), 0);
+        const customerName = document.getElementById('customer-name').value.trim() || 'Walk-in Customer';
 
         const saleData = {
             date: new Date(),
             items: this.cart,
             total: total,
+            customer: customerName,
             cashier: JSON.parse(sessionStorage.getItem('pointify_user'))?.username || 'Unknown',
             paymentMethod: 'CASH' // Simplified for MVP
         };
@@ -308,9 +346,9 @@ class POSModule {
             <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
                 <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 5px;">${item.name}</span>
             </div>
-             <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 11px; color: #555;">
-                <span>${item.qty} x ${item.price.toFixed(2)}</span>
-                <span>${(item.price * item.qty).toFixed(2)}</span>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 11px; color: #555;">
+                <span>${item.qty} x ${item.price.toFixed(2)}${item.discount ? ` (-${item.discount})` : ''}</span>
+                <span>${((item.price - (item.discount || 0)) * item.qty).toFixed(2)}</span>
             </div>
         `).join('');
 
@@ -326,7 +364,9 @@ class POSModule {
                 <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px;">
                     <div>${date}</div>
                     <div>Order: #${sale.id || 'NEW'}</div>
+                    <div>Order: #${sale.id || 'NEW'}</div>
                     <div style="font-weight: bold; margin-top: 2px;">Cashier: ${sale.cashier.toUpperCase()}</div>
+                    <div style="margin-top: 2px;">Customer: ${sale.customer || 'Walk-in'}</div>
                 </div>
                 
                 <div style="border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px;">

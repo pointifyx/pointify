@@ -82,7 +82,7 @@ class ReportsModule {
                                 <tr>
                                     <th class="p-3 border-b border-stone-200">Date</th>
                                     <th class="p-3 border-b border-stone-200">Cashier</th>
-                                    <th class="p-3 border-b border-stone-200 text-right">Items</th>
+                                    <th class="p-3 border-b border-stone-200 text-left pl-4">Items</th>
                                     <th class="p-3 border-b border-stone-200 text-right">Total</th>
                                     <th class="p-3 border-b border-stone-200 text-right">Profit</th>
                                 </tr>
@@ -167,16 +167,62 @@ class ReportsModule {
             return;
         }
 
+        const user = JSON.parse(sessionStorage.getItem('pointify_user'));
+        const isAdmin = user && user.role === 'admin';
+
+        // Hide Stats Cards if not admin
+        if (!isAdmin) {
+            const revCard = document.getElementById('report-revenue').parentElement;
+            const profCard = document.getElementById('report-profit').parentElement;
+            if (revCard) revCard.classList.add('hidden');
+            if (profCard) profCard.classList.add('hidden');
+
+            // Hide profit column in header
+            const table = document.getElementById('report-table');
+            if (table) {
+                const ths = table.querySelectorAll('th');
+                if (ths.length > 0) ths[ths.length - 1].classList.add('hidden');
+            }
+        } else {
+            const revCard = document.getElementById('report-revenue').parentElement;
+            const profCard = document.getElementById('report-profit').parentElement;
+            if (revCard) revCard.classList.remove('hidden');
+            if (profCard) profCard.classList.remove('hidden');
+
+            const table = document.getElementById('report-table');
+            if (table) {
+                const ths = table.querySelectorAll('th');
+                if (ths.length > 0) ths[ths.length - 1].classList.remove('hidden');
+            }
+        }
+
         sortedSales.forEach(sale => {
             const tr = document.createElement('tr');
             const date = new Date(sale.date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' });
 
+            // Format Items List
+            const itemsList = sale.items.map(i => `
+                <div class="flex justify-between gap-4 border-b border-stone-50 last:border-0 pb-1 mb-1 last:pb-0 last:mb-0">
+                    <span class="font-medium text-slate-700">${i.name}</span>
+                    <span class="text-slate-500 text-xs">x${i.qty}</span>
+                </div>
+            `).join('');
+
+            const profitCell = isAdmin
+                ? `<td class="p-3 text-right font-bold text-green-600 align-top">${this.currencySymbol}${(sale.netProfit || 0).toFixed(2)}</td>`
+                : `<td class="hidden"></td>`;
+
             tr.innerHTML = `
-                <td class="p-3 text-slate-600 whitespace-nowrap font-medium">${date}</td>
-                <td class="p-3 text-slate-500">${sale.cashier || '-'}</td>
-                <td class="p-3 text-right text-slate-500">${sale.items.reduce((acc, i) => acc + i.qty, 0)}</td>
-                <td class="p-3 text-right font-bold text-slate-800">${this.currencySymbol}${sale.total.toFixed(2)}</td>
-                <td class="p-3 text-right font-bold text-green-600">${this.currencySymbol}${(sale.netProfit || 0).toFixed(2)}</td>
+                <td class="p-3 text-slate-600 font-medium align-top whitespace-nowrap">${date}</td>
+                <td class="p-3 text-slate-500 align-top">
+                    ${sale.customer ? `<div class="font-bold text-slate-700 mb-1">${sale.customer}</div>` : ''}
+                    <div class="text-xs">Cashier: ${sale.cashier || '-'}</div>
+                </td>
+                <td class="p-3 text-slate-500 text-xs align-top bg-slate-50 rounded p-2 border border-slate-100 min-w-[200px]">
+                    ${itemsList}
+                </td>
+                <td class="p-3 text-right font-bold text-slate-800 align-top">${this.currencySymbol}${sale.total.toFixed(2)}</td>
+                ${profitCell}
             `;
             tbody.appendChild(tr);
         });
@@ -211,3 +257,4 @@ class ReportsModule {
 }
 
 export const reports = new ReportsModule();
+window.reports = reports;

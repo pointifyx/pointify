@@ -462,6 +462,7 @@
             if (viewName === 'pos' && window.posModule) window.posModule.loadProducts();
             if (viewName === 'inventory' && window.inventoryModule) window.inventoryModule.loadProducts();
             if (viewName === 'settings' && window.settingsModule) window.settingsModule.loadSettings();
+            if (viewName === 'reports' && window.reports) window.reports.generateReport();
         }
 
         // Global Toast Notification
