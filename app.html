@@ -51,12 +51,16 @@
 
         /* Consolidated Print Logic */
         @media print {
+            @page {
+                size: 80mm auto;
+                /* Standard Thermal Receipt Width */
+                margin: 0;
+            }
 
             body,
             html {
                 margin: 0;
                 padding: 0;
-                height: 100%;
                 width: 100%;
                 background: white;
             }
@@ -80,6 +84,8 @@
                 z-index: 9999;
                 align-items: flex-start !important;
                 /* Align to top for printing */
+                justify-content: center !important;
+                /* Center on page */
                 padding: 0 !important;
             }
 
@@ -92,9 +98,11 @@
             body>#receipt-modal:not(.hidden)>div {
                 box-shadow: none !important;
                 border: none !important;
-                width: 100% !important;
-                max-width: none !important;
-                max-height: none !important;
+                width: 80mm !important;
+                /* Force width */
+                max-width: 100% !important;
+                margin: 0 auto !important;
+                padding: 5px !important;
                 overflow: visible !important;
             }
 

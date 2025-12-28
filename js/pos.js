@@ -181,7 +181,7 @@ class POSModule {
                 </div>
                 <div class="font-bold text-sm text-red-600 w-16 text-right font-mono">${this.settings.currencySymbol}${itemTotal.toFixed(2)}</div>
                 
-                <div class="flex items-center gap-1 ml-2 group-hover:opacity-100 transition">
+                <div class="flex items-center gap-1 ml-2 transition">
                      <button class="w-6 h-6 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold btn-discount" title="Add Discount">%</button>
                      <button class="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 text-slate-600 flex items-center justify-center text-xs btn-minus font-bold">-</button>
                      <button class="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 text-slate-600 flex items-center justify-center text-xs btn-plus font-bold">+</button>
@@ -342,15 +342,30 @@ class POSModule {
             ? `<div class="text-center mb-2"><img src="${this.settings.storeLogo}" class="max-h-12 mx-auto filter grayscale"></div>`
             : '';
 
-        const itemsHtml = sale.items.map(item => `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 5px;">${item.name}</span>
+        const itemsHtml = sale.items.map(item => {
+            const originalPrice = (item.price * item.qty).toFixed(2);
+            const discountAmt = item.discount ? (item.discount * item.qty).toFixed(2) : '0.00';
+            const finalPrice = ((item.price - (item.discount || 0)) * item.qty).toFixed(2);
+
+            return `
+            <div style="margin-bottom: 4px; border-bottom: 1px dotted #ddd; padding-bottom: 2px;">
+                <div style="font-weight: bold;">${item.name}</div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #333;">
+                    <span>${item.qty} x ${item.price.toFixed(2)}</span>
+                    <span>${originalPrice}</span>
+                </div>
+                ${item.discount ? `
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #e11d48;">
+                    <span>Discount</span>
+                    <span>-${discountAmt}</span>
+                </div>` : ''}
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-top: 1px;">
+                    <span>Item Total</span>
+                    <span>${finalPrice}</span>
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 11px; color: #555;">
-                <span>${item.qty} x ${item.price.toFixed(2)}${item.discount ? ` (-${item.discount})` : ''}</span>
-                <span>${((item.price - (item.discount || 0)) * item.qty).toFixed(2)}</span>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         content.innerHTML = `
             <div style="font-family: 'Courier New', monospace; font-size: 12px; width: 100%; color: black;">
@@ -363,7 +378,6 @@ class POSModule {
 
                 <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px;">
                     <div>${date}</div>
-                    <div>Order: #${sale.id || 'NEW'}</div>
                     <div>Order: #${sale.id || 'NEW'}</div>
                     <div style="font-weight: bold; margin-top: 2px;">Cashier: ${sale.cashier.toUpperCase()}</div>
                     <div style="margin-top: 2px;">Customer: ${sale.customer || 'Walk-in'}</div>
@@ -379,8 +393,9 @@ class POSModule {
                 </div>
                 
                 <div style="text-align: center; margin-top: 15px; font-size: 10px;">
-                    Thank you for your business!
-                    <div style="margin-top: 5px; font-size: 8px; color: #888;">Powered by Pointify Inc : pointify.info</div>
+                    Thank you for your shopping!
+                     <div style="margin-top: 5px; font-size: 8px; color: #888;">Powered by Pointify Inc</div>
+                    <div style="font-weight: bold; font-size: 10px; color: #000;">Contact Us +254791262422</div>
                 </div>
             </div>
             

@@ -125,7 +125,7 @@ class AuthSystem {
             let allowed = true;
 
             if (role === 'cashier') {
-                if (['inventory', 'reports', 'settings', 'users'].includes(view)) allowed = false;
+                if (['inventory', 'settings', 'users'].includes(view)) allowed = false;
             } else if (role === 'manager') {
                 if (['users', 'settings'].includes(view)) allowed = false;
             }
@@ -144,7 +144,7 @@ class AuthSystem {
         const role = this.currentUser.role;
 
         if (role === 'admin') return true;
-        if (role === 'cashier' && view === 'pos') return true;
+        if (role === 'cashier' && ['pos', 'reports'].includes(view)) return true;
         if (role === 'manager' && ['pos', 'inventory', 'reports'].includes(view)) return true;
 
         return false;

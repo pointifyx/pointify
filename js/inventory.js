@@ -149,6 +149,14 @@ class InventoryModule {
                 ? `<img src="${p.image}" class="w-10 h-10 rounded object-cover border border-stone-200 shadow-sm">`
                 : `<div class="w-10 h-10 rounded bg-stone-100 flex items-center justify-center text-xs text-slate-400 font-bold">IMG</div>`;
 
+            // Permissions Check
+            const user = JSON.parse(sessionStorage.getItem('pointify_user'));
+            const isAdmin = user && user.role === 'admin';
+
+            const editBtnHtml = isAdmin
+                ? `<button class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 opacity-0 group-hover:opacity-100 transition edit-btn font-medium">Edit</button>`
+                : `<span class="text-xs text-slate-400 italic">View Only</span>`;
+
             row.innerHTML = `
                 <td class="p-4 flex items-center gap-3">
                     ${iconHtml}
@@ -164,14 +172,14 @@ class InventoryModule {
                     ${isLowStock ? '<span class="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded border border-red-200 font-bold">LOW</span>' : ''}
                 </td>
                 <td class="p-4 text-right">
-                    <button class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 opacity-0 group-hover:opacity-100 transition edit-btn font-medium">
-                        Edit
-                    </button>
+                    ${editBtnHtml}
                 </td>
              `;
 
-            // Click row to edit
-            row.addEventListener('click', () => this.openModal(p));
+            // Click row to edit ONLY if admin, otherwise maybe just show details or do nothing
+            if (isAdmin) {
+                row.addEventListener('click', () => this.openModal(p));
+            }
             tbody.appendChild(row);
         });
     }
