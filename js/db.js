@@ -3,7 +3,7 @@
  * Native IndexedDB Wrapper with Atomic Transactions
  */
 
-const DB_NAME = 'PointifyDB';
+const DB_NAME = 'Pointify_Enterprise_DB';
 const DB_VERSION = 2;
 
 class PointifyDB {
@@ -144,14 +144,22 @@ class PointifyDB {
 
     // Generic Update
     async put(storeName, data) {
+        // VERBOSE LOGGING FOR USER CONFIDENCE
+        console.log(`[DB] Saving to ${storeName}:`, data);
         const db = await this.getDB();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([storeName], 'readwrite');
             const store = transaction.objectStore(storeName);
             const request = store.put(data);
 
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+                console.log(`[DB] Successfully saved to ${storeName}`);
+                resolve(request.result);
+            };
+            request.onerror = () => {
+                console.error(`[DB] Error saving to ${storeName}:`, request.error);
+                reject(request.error);
+            };
         });
     }
 

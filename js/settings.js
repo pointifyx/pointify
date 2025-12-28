@@ -182,7 +182,7 @@ class SettingsModule {
                             hover:file:bg-red-100 hover:file:text-red-800 cursor-pointer transition">
                             ${this.config.storeLogo ? `<img src="${this.config.storeLogo}" class="h-16 mt-4 rounded border border-slate-200 p-1">` : ''}
                         </div>
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-lg transition mt-4 shadow-lg shadow-gray-500/20">
+                        <button type="button" id="btn-save-settings" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-lg transition mt-4 shadow-lg shadow-gray-500/20">
                             Save Configuration
                         </button>
                     </form>
@@ -288,167 +288,183 @@ class SettingsModule {
     }
 
     bindEvents() {
-        const form = document.getElementById('settings-form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // NUCLEAR OPTION: Direct Click Listener
+        const saveBtn = document.getElementById('btn-save-settings');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async (e) => {
+                e.preventDefault(); // Just in case
+                console.log('Settings: Save Button Clicked');
 
-            const name = document.getElementById('setting-name').value;
-            const phone = document.getElementById('setting-phone').value;
-            const address = document.getElementById('setting-address').value;
-            const sym = document.getElementById('setting-currency-symbol').value;
-            const country = document.getElementById('setting-country').value;
-            const code = document.getElementById('setting-currency-code').value;
+                // User Feedback - Immediate
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = 'Saving...';
+                saveBtn.disabled = true;
 
-            // Kenya Values
-            const paybill = document.getElementById('setting-paybill').value;
-            const paybillAcc = document.getElementById('setting-paybill-acc').value;
-            const buygoods = document.getElementById('setting-buygoods').value;
-            const agent = document.getElementById('setting-agent').value;
+                try {
+                    // Helper to safely get value
+                    const getVal = (id) => {
+                        const el = document.getElementById(id);
+                        return el ? el.value.trim() : '';
+                    };
 
-            // Somalia Values
-            const somEvc = document.getElementById('setting-som-evc').value;
-            const somJeeb = document.getElementById('setting-som-jeeb').value;
-            const somEdahab = document.getElementById('setting-som-edahab').value;
-            const somSalaam = document.getElementById('setting-som-salaam').value;
-            const somMerchant = document.getElementById('setting-som-merchant').value;
+                    const name = getVal('setting-name');
+                    const phone = getVal('setting-phone');
+                    const address = getVal('setting-address');
+                    const sym = getVal('setting-currency-symbol');
+                    const country = getVal('setting-country');
+                    const code = getVal('setting-currency-code');
 
-            // Uganda Values
-            const ugAirtel = document.getElementById('setting-ug-airtel').value;
-            const ugMtn = document.getElementById('setting-ug-mtn').value;
-            const ugOther = document.getElementById('setting-ug-other').value;
+                    // Kenya Values
+                    const paybill = getVal('setting-paybill');
+                    const paybillAcc = getVal('setting-paybill-acc');
+                    const buygoods = getVal('setting-buygoods');
+                    const agent = getVal('setting-agent');
 
-            const fileInput = document.getElementById('setting-logo');
+                    // Somalia Values
+                    const somEvc = getVal('setting-som-evc');
+                    const somJeeb = getVal('setting-som-jeeb');
+                    const somEdahab = getVal('setting-som-edahab');
+                    const somSalaam = getVal('setting-som-salaam');
+                    const somMerchant = getVal('setting-som-merchant');
 
-            let logoBase64 = this.config.storeLogo;
+                    // Uganda Values
+                    const ugAirtel = getVal('setting-ug-airtel');
+                    const ugMtn = getVal('setting-ug-mtn');
+                    const ugOther = getVal('setting-ug-other');
 
-            if (fileInput.files.length > 0) {
-                logoBase64 = await this.fileToBase64(fileInput.files[0]);
-            }
+                    const fileInput = document.getElementById('setting-logo');
+                    let logoBase64 = this.config.storeLogo;
 
-            try {
-                await db.put('settings', { key: 'storeName', value: name });
-                await db.put('settings', { key: 'storePhone', value: phone });
-                await db.put('settings', { key: 'storeAddress', value: address });
-                await db.put('settings', { key: 'currencySymbol', value: sym });
-                await db.put('settings', { key: 'storeCountry', value: country });
-                await db.put('settings', { key: 'currencyCode', value: code });
-
-                // Save Kenya
-                await db.put('settings', { key: 'mpesaPaybill', value: paybill });
-                await db.put('settings', { key: 'mpesaAccount', value: paybillAcc });
-                await db.put('settings', { key: 'mpesaBuyGoods', value: buygoods });
-                await db.put('settings', { key: 'mpesaAgent', value: agent });
-
-                // Save Somalia
-                await db.put('settings', { key: 'somaliaEVC', value: somEvc });
-                await db.put('settings', { key: 'somaliaJeeb', value: somJeeb });
-                await db.put('settings', { key: 'somaliaEdahab', value: somEdahab });
-                await db.put('settings', { key: 'somaliaSalaam', value: somSalaam });
-                await db.put('settings', { key: 'somaliaMerchant', value: somMerchant });
-
-                // Save Uganda
-                await db.put('settings', { key: 'ugandaAirtel', value: ugAirtel });
-                await db.put('settings', { key: 'ugandaMTN', value: ugMtn });
-                await db.put('settings', { key: 'ugandaOther', value: ugOther });
-
-                if (logoBase64) {
-                    await db.put('settings', { key: 'storeLogo', value: logoBase64 });
-                    // Update local config immediately so we don't need full reload for logic
-                    this.config.storeLogo = logoBase64;
-
-                    // Manually update the image tag if it exists, or append it
-                    const container = document.getElementById('setting-logo').parentNode;
-                    let img = container.querySelector('img');
-                    if (img) {
-                        img.src = logoBase64;
-                    } else {
-                        img = document.createElement('img');
-                        img.src = logoBase64;
-                        img.className = "h-16 mt-4 rounded border border-slate-200 p-1";
-                        container.appendChild(img);
+                    if (fileInput && fileInput.files.length > 0) {
+                        logoBase64 = await this.fileToBase64(fileInput.files[0]);
                     }
+
+                    // Batch saves to ensure consistency
+                    const saves = [
+                        db.put('settings', { key: 'storeName', value: name }),
+                        db.put('settings', { key: 'storePhone', value: phone }),
+                        db.put('settings', { key: 'storeAddress', value: address }),
+                        db.put('settings', { key: 'currencySymbol', value: sym }),
+                        db.put('settings', { key: 'storeCountry', value: country }),
+                        db.put('settings', { key: 'currencyCode', value: code }),
+
+                        // Kenya
+                        db.put('settings', { key: 'mpesaPaybill', value: paybill }),
+                        db.put('settings', { key: 'mpesaAccount', value: paybillAcc }),
+                        db.put('settings', { key: 'mpesaBuyGoods', value: buygoods }),
+                        db.put('settings', { key: 'mpesaAgent', value: agent }),
+
+                        // Somalia
+                        db.put('settings', { key: 'somaliaEVC', value: somEvc }),
+                        db.put('settings', { key: 'somaliaJeeb', value: somJeeb }),
+                        db.put('settings', { key: 'somaliaEdahab', value: somEdahab }),
+                        db.put('settings', { key: 'somaliaSalaam', value: somSalaam }),
+                        db.put('settings', { key: 'somaliaMerchant', value: somMerchant }),
+
+                        // Uganda
+                        db.put('settings', { key: 'ugandaAirtel', value: ugAirtel }),
+                        db.put('settings', { key: 'ugandaMTN', value: ugMtn }),
+                        db.put('settings', { key: 'ugandaOther', value: ugOther }),
+                    ];
+
+                    if (logoBase64) {
+                        saves.push(db.put('settings', { key: 'storeLogo', value: logoBase64 }));
+                    }
+
+                    await Promise.all(saves);
+
+                    console.log('Settings Saved Successfully');
+                    window.showToast('Settings Saved Successfully');
+
+                    // Force UI Update
+                    await this.init();
+                    console.log('Settings re-initialized');
+                    alert('Settings Saved Successfully!');
+
+                } catch (error) {
+                    console.error('CRITICAL: Failed to save settings:', error);
+                    window.showToast('Error saving settings: ' + error.message, 'error');
+                    alert('Error saving settings: ' + error.message);
+                } finally {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
                 }
-
-                console.log('Settings Saved Successfully');
-                window.showToast('Settings Saved Successfully');
-
-                // FORCE FULL RELOAD OF SETTINGS MODULE to ensure UI reflects DB
-                await this.init();
-                console.log('Settings re-initialized');
-            } catch (error) {
-                console.error('Failed to save settings:', error);
-                window.showToast('Failed to save settings. Please try again.', 'error');
-            }
-        });
+            });
+        }
 
         // Profile Update Handler
         const profileForm = document.getElementById('profile-form');
-        profileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newUsername = document.getElementById('profile-username').value.trim();
-            const newPassword = document.getElementById('profile-password').value.trim();
+        if (profileForm) {
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newUsername = document.getElementById('profile-username').value.trim();
+                const newPassword = document.getElementById('profile-password').value.trim();
 
-            if (!newUsername && !newPassword) {
-                window.showToast('Nothing to update', 'error');
-                return;
-            }
-
-            // Get current user from storage
-            const currentUserSession = sessionStorage.getItem('pointify_user');
-            if (!currentUserSession) {
-                window.showToast('Session Expired. Relogin.', 'error');
-                return;
-            }
-
-            const currentUser = JSON.parse(currentUserSession);
-
-            try {
-                // Fetch actual user record from DB
-                const userRecord = await db.get('users', currentUser.id);
-
-                if (newUsername) userRecord.username = newUsername;
-                if (newPassword) userRecord.password = newPassword;
-
-                await db.put('users', userRecord);
-
-                // Update Session
-                sessionStorage.setItem('pointify_user', JSON.stringify(userRecord));
-
-                // Reset form
-                document.getElementById('profile-username').value = '';
-                document.getElementById('profile-password').value = '';
-
-                window.showToast('Profile Updated Successfully');
-            } catch (err) {
-                console.error(err);
-                window.showToast('Failed to update profile', 'error');
-            }
-        });
-
-        document.getElementById('add-user-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('new-user-name').value;
-            const username = document.getElementById('new-user-username').value;
-            const password = document.getElementById('new-user-password').value;
-            const role = document.getElementById('new-user-role').value;
-
-            try {
-                // Simple duplication check (in a real app, use index/constraint)
-                const allUsers = await db.getAll('users');
-                if (allUsers.find(u => u.username === username)) {
-                    window.showToast('Username already exists', 'error');
+                if (!newUsername && !newPassword) {
+                    window.showToast('Nothing to update', 'error');
                     return;
                 }
 
-                await db.add('users', { name, username, password, role });
-                window.showToast('User Created Successfully');
-                e.target.reset();
-                this.loadUsers();
-            } catch (err) {
-                console.error(err);
-                window.showToast('Failed to create user', 'error');
-            }
-        });
+                // Get current user from storage
+                const currentUserSession = sessionStorage.getItem('pointify_user');
+                if (!currentUserSession) {
+                    window.showToast('Session Expired. Relogin.', 'error');
+                    return;
+                }
+
+                const currentUser = JSON.parse(currentUserSession);
+
+                try {
+                    // Fetch actual user record from DB
+                    const userRecord = await db.get('users', currentUser.id);
+
+                    if (newUsername) userRecord.username = newUsername;
+                    if (newPassword) userRecord.password = newPassword;
+
+                    await db.put('users', userRecord);
+
+                    // Update Session
+                    sessionStorage.setItem('pointify_user', JSON.stringify(userRecord));
+
+                    // Reset form
+                    document.getElementById('profile-username').value = '';
+                    document.getElementById('profile-password').value = '';
+
+                    window.showToast('Profile Updated Successfully');
+                } catch (err) {
+                    console.error(err);
+                    window.showToast('Failed to update profile', 'error');
+                }
+            });
+        }
+
+        const addUserForm = document.getElementById('add-user-form');
+        if (addUserForm) {
+            addUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-user-name').value;
+                const username = document.getElementById('new-user-username').value;
+                const password = document.getElementById('new-user-password').value;
+                const role = document.getElementById('new-user-role').value;
+
+                try {
+                    // Simple duplication check (in a real app, use index/constraint)
+                    const allUsers = await db.getAll('users');
+                    if (allUsers.find(u => u.username === username)) {
+                        window.showToast('Username already exists', 'error');
+                        return;
+                    }
+
+                    await db.add('users', { name, username, password, role });
+                    window.showToast('User Created Successfully');
+                    e.target.reset();
+                    this.loadUsers();
+                } catch (err) {
+                    console.error(err);
+                    window.showToast('Failed to create user', 'error');
+                }
+            });
+        }
 
         // Initialize user list
         this.loadUsers();
