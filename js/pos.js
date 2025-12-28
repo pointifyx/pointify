@@ -74,16 +74,7 @@ class POSModule {
                 </div>
             </div>
 
-            <!-- Receipt Modal -->
-            <div id="receipt-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-                <div class="bg-white text-black p-0 rounded w-80 max-h-[90vh] overflow-y-auto font-mono text-sm relative shadow-2xl">
-                     <button id="close-receipt" class="absolute top-2 right-2 text-gray-500 hover:text-black">✖</button>
-                    <div id="receipt-content" class="p-4"></div>
-                    <div class="p-4 border-t border-gray-200 bg-gray-50 flex gap-2 no-print">
-                        <button onclick="window.print()" class="flex-1 bg-black text-white py-2 rounded font-bold hover:bg-gray-800">Print</button>
-                    </div>
-                </div>
-            </div>
+
         `;
     }
 
@@ -277,9 +268,7 @@ class POSModule {
             await this.processCheckout();
         });
 
-        document.getElementById('close-receipt').addEventListener('click', () => {
-            document.getElementById('receipt-modal').classList.add('hidden');
-        });
+
     }
 
     async processCheckout() {
@@ -309,7 +298,7 @@ class POSModule {
     generateReceipt(sale) {
         const modal = document.getElementById('receipt-modal');
         const content = document.getElementById('receipt-content');
-        const date = new Date(sale.date).toLocaleString();
+        const date = new Date(sale.date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' });
 
         const logoHtml = this.settings.storeLogo
             ? `<div class="text-center mb-2"><img src="${this.settings.storeLogo}" class="max-h-12 mx-auto filter grayscale"></div>`

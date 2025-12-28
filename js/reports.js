@@ -169,7 +169,7 @@ class ReportsModule {
 
         sortedSales.forEach(sale => {
             const tr = document.createElement('tr');
-            const date = new Date(sale.date).toLocaleString();
+            const date = new Date(sale.date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' });
 
             tr.innerHTML = `
                 <td class="p-3 text-slate-600 whitespace-nowrap font-medium">${date}</td>
@@ -194,7 +194,7 @@ class ReportsModule {
 
         // CSV Rows
         this.currentData.forEach(row => {
-            const date = new Date(row.date).toLocaleString().replace(',', '');
+            const date = new Date(row.date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' }).replace(',', '');
             const items = row.items.reduce((acc, i) => acc + i.qty, 0);
             csvContent += `${date},${row.id || 'N/A'},${row.cashier},${items},${row.total},${row.netProfit}\n`;
         });

@@ -49,129 +49,127 @@
             animation: slideIn 0.3s ease-out forwards;
         }
 
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-
-            /* Receipt Printing Default */
-            #receipt-modal,
-            #receipt-modal * {
-                visibility: visible;
-            }
-
-            #receipt-modal {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-
-            .no-print {
-                display: none !important;
-            }
-
-            /* Report Printing Overrides */
-            /* If we are NOT in the receipt modal (heuristic: checking if reports view is active/visible) */
-            /* Actually, better approach: hide receipt modal if hidden, and show reports if printing reports */
-        }
-
-        /* Better Print Logic using classes applied dynamically or just specific targeting */
+        /* Consolidated Print Logic */
         @media print {
 
-            /* GLOBAL RESET */
             body,
             html {
                 margin: 0;
                 padding: 0;
-                width: 100%;
                 height: 100%;
-            }
-
-            body>* {
-                display: none !important;
-            }
-
-            /* SCENARIO 1: RECEIPT MODAL IS OPEN */
-            /* We can check if receipt-modal does NOT have 'hidden' class */
-            #receipt-modal:not(.hidden) {
-                display: block !important;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 80mm;
-                /* Force 80mm for receipt */
-            }
-
-            #receipt-modal:not(.hidden) * {
-                visibility: visible;
-                display: block;
-                /* Ensure block layout */
-            }
-
-            #receipt-modal:not(.hidden) .no-print {
-                display: none !important;
-            }
-
-            #receipt-modal:not(.hidden) #receipt-content {
-                width: 100%;
-            }
-
-            /* SCENARIO 2: REPORT PRINTING */
-            /* If Receipt is HIDDEN, we assume we might be printing reports */
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) {
-                display: block !important;
-                position: absolute;
-                top: 0;
-                left: 0;
                 width: 100%;
                 background: white;
             }
 
-            /* Show report content */
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) * {
-                visibility: visible;
-                display: block;
-            }
-
-            /* Restore Flex/Grid for report table */
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) .grid {
-                display: grid !important;
-            }
-
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) .flex {
-                display: flex !important;
-            }
-
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) table {
-                display: table !important;
-                width: 100%;
-                border: 1px solid #ddd;
-            }
-
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) thead {
-                display: table-header-group !important;
-            }
-
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) tbody {
-                display: table-row-group !important;
-            }
-
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) tr {
-                display: table-row !important;
-            }
-
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) td,
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) th {
-                display: table-cell !important;
-            }
-
-            /* Hide non-print elements in report */
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) button,
-            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) .filter-btn {
+            /* Default: Hide direct children of body to reset */
+            body>* {
                 display: none !important;
+            }
+
+            /* --- SCENARIO 1: RECEIPT PRINTING --- */
+            /* Target correct receipt modal which is a direct child of body in app.html */
+            body>#receipt-modal:not(.hidden) {
+                display: flex !important;
+                visibility: visible !important;
+                position: absolute !important;
+                top: 0;
+                left: 0;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
+                z-index: 9999;
+                align-items: flex-start !important;
+                /* Align to top for printing */
+                padding: 0 !important;
+            }
+
+            /* Show contents of receipt modal */
+            body>#receipt-modal:not(.hidden) * {
+                visibility: visible !important;
+            }
+
+            /* Ensure the receipt content box behaves for print */
+            body>#receipt-modal:not(.hidden)>div {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            /* Hide print/close buttons */
+            .no-print,
+            button {
+                display: none !important;
+            }
+
+            /* --- SCENARIO 2: REPORT PRINTING --- */
+            /* Active when receipt modal is HIDDEN and Reports view is NOT hidden */
+            body:has(#receipt-modal.hidden) #app-shell,
+            body:has(#receipt-modal.hidden) main,
+            body:has(#receipt-modal.hidden) #views-container,
+            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) {
+                display: block !important;
+                visibility: visible !important;
+                height: auto !important;
+                overflow: visible !important;
+                position: static !important;
+                width: 100% !important;
+            }
+
+            /* Hide Sidebar and Headers when printing reports */
+            body:has(#receipt-modal.hidden) aside,
+            body:has(#receipt-modal.hidden) header,
+            body:has(#receipt-modal.hidden) nav {
+                display: none !important;
+            }
+
+            /* Ensure Report Container is clean */
+            body:has(#receipt-modal.hidden) #view-reports:not(.hidden) {
+                background: white;
+                margin: 0;
+                padding: 20px;
+                border: none;
+            }
+
+            /* Hide report controls */
+            body:has(#receipt-modal.hidden) #view-reports .flex.justify-between button,
+            body:has(#receipt-modal.hidden) #view-reports .gap-2 button,
+            body:has(#receipt-modal.hidden) .filter-btn {
+                display: none !important;
+            }
+
+            /* Table Styling for Print */
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                border: 1px solid #ddd !important;
+                padding: 8px !important;
+                color: black !important;
+            }
+
+            th {
+                background-color: #f3f3f3 !important;
+                font-weight: bold;
+            }
+
+            /* Stats Cards for Print */
+            .remove-print-margin {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 10px !important;
+                margin-bottom: 20px;
+            }
+
+            .remove-print-margin>div {
+                border: 1px solid #ddd !important;
+                padding: 10px !important;
             }
         }
     </style>
