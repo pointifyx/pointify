@@ -8,9 +8,17 @@ class InventoryModule {
     }
 
     async init() {
+        await this.loadSettings(); // Load currency settings first
         this.renderLayout();
         await this.loadProducts();
         this.bindEvents();
+    }
+
+    async loadSettings() {
+        this.currencySymbol = '$'; // Default
+        const storedSettings = await db.getAll('settings');
+        const sym = storedSettings.find(s => s.key === 'currencySymbol');
+        if (sym) this.currencySymbol = sym.value;
     }
 
     async loadProducts() {
@@ -149,8 +157,8 @@ class InventoryModule {
                         <div class="text-xs text-slate-400 font-mono">${p.barcode || 'No Barcode'}</div>
                     </div>
                 </td>
-                <td class="p-4 text-slate-800 font-mono font-medium">$${parseFloat(p.price).toFixed(2)}</td>
-                <td class="p-4 text-slate-400 font-mono text-xs">$${parseFloat(p.costPrice || 0).toFixed(2)}</td>
+                <td class="p-4 text-slate-800 font-mono font-medium">${this.currencySymbol}${parseFloat(p.price).toFixed(2)}</td>
+                <td class="p-4 text-slate-400 font-mono text-xs">${this.currencySymbol}${parseFloat(p.costPrice || 0).toFixed(2)}</td>
                 <td class="p-4 ${stockClass}">
                     ${p.stock}
                     ${isLowStock ? '<span class="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded border border-red-200 font-bold">LOW</span>' : ''}

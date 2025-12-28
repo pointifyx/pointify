@@ -8,8 +8,16 @@ class ReportsModule {
 
     async init() {
         this.renderLayout();
+        await this.loadSettings();
         await this.generateReport(); // Load all by default
         this.bindEvents();
+    }
+
+    async loadSettings() {
+        this.currencySymbol = '$';
+        const storedSettings = await db.getAll('settings');
+        const sym = storedSettings.find(s => s.key === 'currencySymbol');
+        if (sym) this.currencySymbol = sym.value;
     }
 
     renderLayout() {
@@ -167,8 +175,8 @@ class ReportsModule {
                 <td class="p-3 text-slate-600 whitespace-nowrap font-medium">${date}</td>
                 <td class="p-3 text-slate-500">${sale.cashier || '-'}</td>
                 <td class="p-3 text-right text-slate-500">${sale.items.reduce((acc, i) => acc + i.qty, 0)}</td>
-                <td class="p-3 text-right font-bold text-slate-800">${sale.total.toFixed(2)}</td>
-                <td class="p-3 text-right font-bold text-green-600">${(sale.netProfit || 0).toFixed(2)}</td>
+                <td class="p-3 text-right font-bold text-slate-800">${this.currencySymbol}${sale.total.toFixed(2)}</td>
+                <td class="p-3 text-right font-bold text-green-600">${this.currencySymbol}${(sale.netProfit || 0).toFixed(2)}</td>
             `;
             tbody.appendChild(tr);
         });

@@ -61,18 +61,16 @@ class AuthSystem {
                 if (errorMsg) errorMsg.classList.add('hidden');
             } else {
                 if (errorMsg) {
-                    errorMsg.textContent = "Invalid credentials. Try: Admin / 123Admin";
+                    errorMsg.textContent = "Invalid username or password.";
                     errorMsg.classList.remove('hidden');
                 }
-                alert("Invalid username or password.\n\nDefault is:\nAdmin\n123Admin");
             }
         } catch (err) {
             console.error("Login error:", err);
             if (errorMsg) {
-                errorMsg.textContent = "System error during login. Check console.";
+                errorMsg.textContent = "System error during login.";
                 errorMsg.classList.remove('hidden');
             }
-            alert("System Error during Login:\n" + err.message);
         }
     }
 
