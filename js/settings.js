@@ -379,7 +379,9 @@ class SettingsModule {
                     // Force UI Update
                     await this.init();
                     console.log('Settings re-initialized');
-                    alert('Settings Saved Successfully!');
+                    // User Feedback
+                    alert('Settings Saved Successfully! application will refresh.');
+                    window.location.reload();
 
                 } catch (error) {
                     console.error('CRITICAL: Failed to save settings:', error);

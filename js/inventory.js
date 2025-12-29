@@ -151,7 +151,11 @@ class InventoryModule {
 
             // Permissions Check
             const user = JSON.parse(sessionStorage.getItem('pointify_user'));
-            const canEdit = user && (user.role === 'admin' || user.role === 'manager');
+            const isAdmin = user && user.role === 'admin';
+            const isManager = user && user.role === 'manager';
+
+            // Managers can ADD, but NOT EDIT. Admins can do everything.
+            const canEdit = isAdmin;
 
             const editBtnHtml = canEdit
                 ? `<button class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 opacity-0 group-hover:opacity-100 transition edit-btn font-medium">Edit</button>`
@@ -176,7 +180,7 @@ class InventoryModule {
                 </td>
              `;
 
-            // Click row to edit ONLY if admin/manager
+            // Click row to edit ONLY if admin
             if (canEdit) {
                 row.addEventListener('click', () => this.openModal(p));
             }

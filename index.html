@@ -33,6 +33,103 @@
             background-image: radial-gradient(#E7E5E4 1px, transparent 1px);
             background-size: 32px 32px;
         }
+
+        @media print {
+            @page {
+                size: landscape;
+                margin: 5mm;
+            }
+
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                zoom: 0.75;
+                /* Shrink content to fit */
+            }
+
+            /* Hide non-essentials */
+            nav,
+            button,
+            .filter-btn,
+            .scope-btn,
+            #btn-saved-settings,
+            #btn-export-csv,
+            #btn-print-report,
+            .remove-print-margin {
+                display: none !important;
+            }
+
+            /* Reset Layout */
+            #view-reports {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            /* Table Optimization */
+            table {
+                width: 100% !important;
+                table-layout: auto !important;
+                font-size: 10px !important;
+                /* Smaller text for print */
+            }
+
+            th,
+            td {
+                padding: 4px !important;
+                /* Tighter spacing */
+                white-space: normal !important;
+                /* Allow wrapping */
+            }
+
+            /* Specific column widths if needed */
+            th:nth-child(1) {
+                width: 10%;
+            }
+
+            /* Date */
+            th:nth-child(5) {
+                width: 15%;
+            }
+
+            /* Item */
+
+            /* Ensure all rows print */
+            tr {
+                break-inside: avoid;
+            }
+
+            /* Show Stats at top nicely */
+            .grid.grid-cols-1.md\:grid-cols-3 {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 10px !important;
+                margin-bottom: 20px !important;
+            }
+
+            .bg-white {
+                border: none !important;
+                shadow: none !important;
+            }
+
+            /* Payment Breakdown Container */
+            #payment-summary-container {
+                display: flex !important;
+                flex-direction: row !important;
+                break-inside: avoid;
+                margin-bottom: 20px !important;
+                border: 1px solid #ddd !important;
+            }
+
+            /* Security: Ensure hidden elements STAY hidden even with forced display above */
+            .hidden,
+            #payment-summary-container.hidden {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 

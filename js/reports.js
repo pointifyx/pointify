@@ -76,6 +76,29 @@ class ReportsModule {
                     </div>
                 </div>
 
+                <!-- Payment Method Breakdown (Admin/Manager) -->
+                <div id="payment-summary-container" class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm flex flex-col md:flex-row gap-8">
+                     <div class="flex-1">
+                        <h3 class="font-bold text-slate-700 mb-4 uppercase text-xs tracking-wider">Payment Summary</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <div class="text-xs font-bold text-green-700 uppercase mb-1">Total Cash</div>
+                                <div class="text-xl font-black text-green-800" id="summary-cash">...</div>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <div class="text-xs font-bold text-blue-700 uppercase mb-1">Total Electronic</div>
+                                <div class="text-xl font-black text-blue-800" id="summary-electronic">...</div>
+                            </div>
+                        </div>
+                     </div>
+                     <div class="flex-1 border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-8">
+                        <h3 class="font-bold text-slate-700 mb-4 uppercase text-xs tracking-wider">Detailed Breakdown</h3>
+                        <div class="space-y-2" id="summary-list">
+                            <!-- Injected JS -->
+                        </div>
+                     </div>
+                </div>
+
                 <!-- Recent Sales List -->
                 <div class="flex-1 bg-white rounded-xl border border-stone-200 overflow-hidden flex flex-col shadow-sm print:border-0">
                     <div class="p-4 border-b border-stone-200 font-bold text-slate-700 bg-stone-50/50 flex justify-between">
@@ -88,10 +111,13 @@ class ReportsModule {
                                 <tr>
                                     <th class="p-3 border-b border-stone-200">Date</th>
                                     <th class="p-3 border-b border-stone-200">Cashier</th>
+                                    <th class="p-3 border-b border-stone-200">Customer</th>
                                     <th class="p-3 border-b border-stone-200">Payment</th>
-                                    <th class="p-3 border-b border-stone-200 text-left pl-4">Items</th>
+                                    <th class="p-3 border-b border-stone-200">Item</th>
+                                    <th class="p-3 border-b border-stone-200 text-center">Qty</th>
+                                    <th class="p-3 border-b border-stone-200 text-right">Price</th>
+                                    <th class="p-3 border-b border-stone-200 text-right">Discount</th>
                                     <th class="p-3 border-b border-stone-200 text-right">Total</th>
-                                    <th class="p-3 border-b border-stone-200 text-right profit-col">Profit</th>
                                 </tr>
                             </thead>
                             <tbody id="report-sales-list" class="divide-y divide-stone-100">
@@ -135,6 +161,9 @@ class ReportsModule {
                 e.target.classList.add('bg-white', 'shadow-sm', 'text-red-600');
                 e.target.classList.remove('text-slate-600');
 
+                // Apply filter
+                const filter = e.target.dataset.filter;
+                this.generateReport(filter);
             });
         });
 
@@ -208,11 +237,6 @@ class ReportsModule {
             // Restricted Logic (Cashier or Manager-My-Sales)
             filteredSales = filteredSales.filter(s => s.cashier === user.username);
 
-            // Hide Restricted Time Filters (Only for Cashier, Manager can see all times? User said "my sales and trcstionlogs and all sales...". Let's assume Manager CAN see all times if they want, OR restrict times for consistency in "My Sales" mode. 
-            // Request said: "manager reports section... give him features he can filter my sales... and all sales"
-            // Usually "My Sales" acts like a cashier view. Let's keep filters unrestricted for Manager to be safe, or start restricted.
-            // Let's Keep Time filters OPEN for Manager even in My Sales, unless user complains. Cashier gets them hidden.
-
             const btnYear = document.getElementById('btn-filter-year');
             const btnAll = document.getElementById('btn-filter-all');
 
@@ -273,37 +297,82 @@ class ReportsModule {
         document.getElementById('report-revenue').textContent = `${this.currencySymbol}${totalRevenue.toFixed(2)}`;
         document.getElementById('report-orders').textContent = totalOrders;
 
-        // Render Table (Limit 100)
+        // 3. Payment Breakdown Calculation
+        const paymentStats = {
+            cash: 0,
+            electronic: 0,
+            methods: {}
+        };
+
+        filteredSales.forEach(sale => {
+            const method = sale.paymentMethod || 'CASH';
+            const amount = sale.total;
+
+            if (!paymentStats.methods[method]) paymentStats.methods[method] = 0;
+            paymentStats.methods[method] += amount;
+
+            if (method === 'CASH') {
+                paymentStats.cash += amount;
+            } else {
+                paymentStats.electronic += amount;
+            }
+        });
+
+        // Render Summary
+        const container = document.getElementById('payment-summary-container');
+        if (container) {
+            // Visibility: Only visible if NOT restricted, or if Manager wants to see it?
+            // "i need the reports setion of manager and admin add the calcuter"
+            if (isRestrictedView && !isManager) {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden'); // Admin & Manager see it
+
+                document.getElementById('summary-cash').textContent = `${this.currencySymbol}${paymentStats.cash.toFixed(2)}`;
+                document.getElementById('summary-electronic').textContent = `${this.currencySymbol}${paymentStats.electronic.toFixed(2)}`;
+
+                const list = document.getElementById('summary-list');
+                list.innerHTML = '';
+
+                Object.keys(paymentStats.methods).forEach(method => {
+                    const amt = paymentStats.methods[method];
+                    const percent = totalRevenue > 0 ? ((amt / totalRevenue) * 100).toFixed(1) : 0;
+
+                    list.innerHTML += `
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-medium text-slate-600">${method}</span>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-slate-400 font-mono bg-slate-50 px-1 rounded">${percent}%</span>
+                                <span class="font-bold text-slate-800">${this.currencySymbol}${amt.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // Render Table (Limit 100 recent entries logic needs adjustment for line items)
         const tbody = document.getElementById('report-sales-list');
         tbody.innerHTML = '';
-        const sortedSales = filteredSales.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 100);
 
-        if (sortedSales.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic">No sales found for this period.</td></tr>`;
+        // Sort sales by date first
+        const sortedSales = filteredSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Flatten to Line Items for Table Display
+        // We want 100 line items max to prevent lag, or maybe 50 sales worth? 
+        // Let's grab first 50 sales and show all their items.
+        const recentSales = sortedSales.slice(0, 50);
+
+        if (recentSales.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400 italic">No sales found for this period.</td></tr>`;
         }
 
         // Hide Admin/Global Specifics
         const adminStatsContainer = document.getElementById('admin-stats-container');
 
         if (isRestrictedView) {
-            const revCard = document.getElementById('report-revenue').parentElement;
-            const profCard = document.getElementById('report-second-metric').parentElement;
-            if (revCard) revCard.classList.remove('hidden');
-            if (profCard) profCard.classList.remove('hidden');
-
-            // Hide profit column in header
-            document.querySelectorAll('.profit-col').forEach(el => el.classList.add('hidden'));
-
             if (adminStatsContainer) adminStatsContainer.classList.add('hidden');
-
         } else {
-            const revCard = document.getElementById('report-revenue').parentElement;
-            const profCard = document.getElementById('report-second-metric').parentElement;
-            if (revCard) revCard.classList.remove('hidden');
-            if (profCard) profCard.classList.remove('hidden');
-
-            document.querySelectorAll('.profit-col').forEach(el => el.classList.remove('hidden'));
-
             // Employee Stats: Visible for Admin OR Manager-All-Sales
             if (adminStatsContainer) {
                 adminStatsContainer.classList.remove('hidden');
@@ -311,47 +380,37 @@ class ReportsModule {
             }
         }
 
-        // Helper to format rows handles the Profit cell visibility based on isRestrictedView internally if we pass it, or we rely on the logic below.
-        // Actually, the loop below uses 'isAdmin' for profit cell. We need to update that to 'isRestrictedView'.
-        const showProfit = !isRestrictedView;
+        recentSales.forEach(sale => {
+            const dateObj = new Date(sale.date);
+            const date = dateObj.toLocaleDateString('en-GB'); // DD/MM/YYYY
+            const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-        sortedSales.forEach(sale => {
-            const tr = document.createElement('tr');
-            const date = new Date(sale.date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' });
+            sale.items.forEach(item => {
+                const tr = document.createElement('tr');
+                const unitPrice = item.price;
+                const discount = item.discount || 0;
+                const finalPrice = unitPrice - discount;
+                const lineTotal = finalPrice * item.qty;
 
-            // Format Items List
-            const itemsList = sale.items.map(i => {
-                const itemPrice = (i.price - (i.discount || 0)).toFixed(2);
-                return `
-                <div class="flex justify-between gap-4 border-b border-stone-50 last:border-0 pb-1 mb-1 last:pb-0 last:mb-0">
-                    <span class="font-medium text-slate-700">${i.name}</span>
-                    <div class="text-right">
-                        <span class="text-slate-500 text-xs">x${i.qty}</span>
-                        <span class="text-slate-600 text-xs font-mono ml-1">@ ${this.currencySymbol}${itemPrice}</span>
-                    </div>
-                </div>
-            `}).join('');
+                // User Requested Columns:
+                // Date, Cashier, Customer, Payment, Item, Qty, Price, Discount, Total
 
-            const profitCell = showProfit
-                ? `<td class="p-3 text-right font-bold text-green-600 align-top profit-col">${this.currencySymbol}${(sale.netProfit || 0).toFixed(2)}</td>`
-                : `<td class="hidden profit-col"></td>`;
-
-            tr.innerHTML = `
-                <td class="p-3 text-slate-600 font-medium align-top whitespace-nowrap">${date}</td>
-                <td class="p-3 text-slate-500 align-top">
-                    ${sale.customer ? `<div class="font-bold text-slate-700 mb-1">${sale.customer}</div>` : ''}
-                    <div class="text-xs">Cashier: ${sale.cashier || '-'}</div>
-                </td>
-                <td class="p-3 text-slate-600 font-bold text-xs align-top uppercase">
-                    ${sale.paymentMethod || 'CASH'}
-                </td>
-                <td class="p-3 text-slate-500 text-xs align-top bg-slate-50 rounded p-2 border border-slate-100 min-w-[200px]">
-                    ${itemsList}
-                </td>
-                <td class="p-3 text-right font-bold text-slate-800 align-top">${this.currencySymbol}${sale.total.toFixed(2)}</td>
-                ${profitCell}
-            `;
-            tbody.appendChild(tr);
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-600 font-medium whitespace-nowrap align-middle">
+                        <div>${date}</div>
+                        <div class="text-xs text-slate-400">${time}</div>
+                    </td>
+                    <td class="p-3 text-slate-600 align-middle">${sale.cashier || '-'}</td>
+                    <td class="p-3 text-slate-600 align-middle">${sale.customer || '-'}</td>
+                    <td class="p-3 text-slate-600 font-bold text-xs align-middle uppercase">${sale.paymentMethod || 'CASH'}</td>
+                    <td class="p-3 text-slate-700 font-bold align-middle">${item.name}</td>
+                    <td class="p-3 text-center text-slate-600 align-middle">${item.qty}x</td>
+                    <td class="p-3 text-right text-slate-600 font-mono align-middle">${this.currencySymbol}${unitPrice.toFixed(2)}</td>
+                    <td class="p-3 text-right text-red-500 font-mono align-middle">${discount > 0 ? this.currencySymbol + discount.toFixed(2) : '-'}</td>
+                    <td class="p-3 text-right text-slate-800 font-bold font-mono align-middle">${this.currencySymbol}${lineTotal.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         });
 
     }
