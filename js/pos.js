@@ -28,29 +28,54 @@ class POSModule {
 
     renderLayout() {
         this.container.innerHTML = `
-            <div class="flex flex-col md:flex-row h-screen max-h-[calc(100vh-6rem)] gap-4">
-                <!-- Left: Product Grid -->
-                <div class="flex-1 flex flex-col bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+            <div class="flex flex-col md:flex-row h-full md:h-[calc(100vh-6rem)] gap-4 relative">
+                <!-- Left: Product Grid (Shown by default on Mobile) -->
+                <div id="pos-panel-products" class="w-full md:flex-1 flex flex-col bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm h-[calc(100vh-9rem)] md:h-full relative">
                     <!-- Search Bar -->
                     <div class="p-4 border-b border-stone-200 bg-stone-50/50">
                         <div class="relative">
                             <svg class="w-5 h-5 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            <input type="text" id="pos-search" placeholder="Scan Barcode or Search Product..." class="w-full bg-white border border-stone-200 rounded-lg pl-10 pr-4 py-2.5 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none">
+                            <input type="text" id="pos-search" placeholder="Scan Barcode or Search..." class="w-full bg-white border border-stone-200 rounded-lg pl-10 pr-4 py-2.5 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none">
                         </div>
                     </div>
                     
                     <!-- Products Grid -->
-                    <div id="pos-grid" class="flex-1 overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 content-start bg-[#FDFBF7]">
+                    <div id="pos-grid" class="flex-1 overflow-y-auto p-4 grid grid-cols-2 lg:grid-cols-4 gap-4 content-start bg-[#FDFBF7] pb-24 md:pb-4">
                         <!-- Products injected here -->
+                    </div>
+
+                    <!-- Mobile Floating Cart Button -->
+                    <div class="md:hidden absolute bottom-4 left-4 right-4">
+                        <button id="mobile-cart-toggle" class="w-full bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex justify-between items-center transform hover:scale-[1.02] transition">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-red-600 text-xs font-bold px-2 py-0.5 rounded-full" id="mobile-cart-count">0</div>
+                                <span class="font-bold text-sm">View Current Order</span>
+                            </div>
+                            <span class="font-mono font-bold text-lg" id="mobile-cart-total-btn">0.00</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Right: Cart -->
-                <div class="w-full md:w-96 bg-white rounded-xl border border-stone-200 flex flex-col h-full shadow-sm">
-                    <div class="p-4 border-b border-stone-200 font-bold text-lg flex justify-between items-center text-slate-800">
+                <!-- Right: Cart (Hidden on Mobile initially) -->
+                <div id="pos-panel-cart" class="hidden md:flex w-full md:w-96 bg-white md:rounded-xl border border-stone-200 flex-col h-full shadow-sm fixed inset-0 z-50 md:static md:inset-auto">
+                    
+                     <!-- Mobile Cart Header -->
+                     <div class="md:hidden p-4 border-b border-stone-200 flex items-center gap-4 bg-white">
+                        <button id="mobile-back-products" class="p-2 -ml-2 text-slate-600 hover:text-red-600">
+                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <span class="font-bold text-lg text-slate-900">Current Order</span>
+                     </div>
+
+                    <div class="hidden md:flex p-4 border-b border-stone-200 font-bold text-lg justify-between items-center text-slate-800">
                         <span>Current Order</span>
                         <button id="clear-cart" class="text-xs text-red-500 hover:text-red-700 font-medium">Clear</button>
                     </div>
+                    
+                    <!-- Mobile Clear Button (Injected in header for mobile really, but lets keep simple) -->
+                     <div class="md:hidden px-4 pt-2 flex justify-end">
+                        <button id="clear-cart-mobile" class="text-xs text-red-500 font-bold uppercase tracking-wider">Clear All</button>
+                     </div>
 
                     <!-- Cart Items -->
                     <div id="cart-items" class="flex-1 overflow-y-auto p-2 space-y-2 bg-[#FDFBF7]">
@@ -59,8 +84,7 @@ class POSModule {
 
                     <!-- Totals & Checkout -->
                     <div class="p-4 bg-stone-50 border-t border-stone-200 space-y-3">
-                            <input type="text" id="customer-name" placeholder="Customer Name (Optional)" class="w-full bg-white border border-stone-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none mb-2">
-                         </div>
+                         <input type="text" id="customer-name" placeholder="Customer Name (Optional)" class="w-full bg-white border border-stone-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none mb-2">
                          
                          <!-- Payment Method Selector -->
                          <div class="mb-2">
@@ -84,11 +108,32 @@ class POSModule {
                     </div>
                 </div>
             </div>
-
-
         `;
 
         this.renderPaymentButtons();
+
+        // Bind Mobile Toggles
+        document.getElementById('mobile-cart-toggle').addEventListener('click', () => {
+            document.getElementById('pos-panel-products').classList.add('hidden');
+            document.getElementById('pos-panel-cart').classList.remove('hidden', 'hidden');
+            document.getElementById('pos-panel-cart').classList.add('flex');
+        });
+
+        document.getElementById('mobile-back-products').addEventListener('click', () => {
+            document.getElementById('pos-panel-cart').classList.add('hidden');
+            document.getElementById('pos-panel-cart').classList.remove('flex');
+            document.getElementById('pos-panel-products').classList.remove('hidden');
+        });
+
+        const clearMobile = document.getElementById('clear-cart-mobile');
+        if (clearMobile) {
+            clearMobile.addEventListener('click', () => {
+                if (confirm("Clear cart?")) {
+                    this.cart = [];
+                    this.renderCart();
+                }
+            });
+        }
     }
 
     renderPaymentButtons() {
@@ -217,11 +262,13 @@ class POSModule {
         container.innerHTML = '';
 
         let subtotal = 0;
+        let itemCount = 0;
 
         this.cart.forEach(item => {
             const price = item.price - (item.discount || 0);
             const itemTotal = price * item.qty;
             subtotal += itemTotal;
+            itemCount += item.qty;
 
             const div = document.createElement('div');
             div.className = "flex items-center gap-2 bg-white p-2.5 rounded border border-stone-100 hover:border-red-200 shadow-sm transition group";
@@ -249,9 +296,17 @@ class POSModule {
             container.appendChild(div);
         });
 
-        document.getElementById('cart-subtotal').textContent = `${this.settings.currencySymbol}${subtotal.toFixed(2)}`;
-        document.getElementById('cart-total').textContent = `${this.settings.currencySymbol}${subtotal.toFixed(2)}`;
-        document.getElementById('btn-charge-amount').textContent = `${this.settings.currencySymbol}${subtotal.toFixed(2)}`;
+        const formattedTotal = `${this.settings.currencySymbol}${subtotal.toFixed(2)}`;
+
+        document.getElementById('cart-subtotal').textContent = formattedTotal;
+        document.getElementById('cart-total').textContent = formattedTotal;
+        document.getElementById('btn-charge-amount').textContent = formattedTotal;
+
+        // Update Mobile Floating Button Stats
+        const mobileCount = document.getElementById('mobile-cart-count');
+        const mobileTotal = document.getElementById('mobile-cart-total-btn');
+        if (mobileCount) mobileCount.textContent = itemCount;
+        if (mobileTotal) mobileTotal.textContent = formattedTotal;
 
         const checkoutBtn = document.getElementById('btn-checkout');
         if (this.cart.length === 0) {
