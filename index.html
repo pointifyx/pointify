@@ -335,13 +335,38 @@
         <p class="text-slate-400 text-sm">© 2025 Pointify Systems. All rights reserved.</p>
     </footer>
 
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration & Auto-Update -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW registered: ', reg))
-                    .catch(err => console.log('SW registration failed: ', err));
+                navigator.serviceWorker.register('./sw.js').then(registration => {
+                    console.log('SW registered: ', registration);
+
+                    // Auto-Update Logic
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New content available
+                            }
+                        });
+                    });
+
+                    // POLLING: Check for updates every 10 minutes
+                    setInterval(() => {
+                        console.log('Checking for updates...');
+                        registration.update();
+                    }, 10 * 60 * 1000);
+
+                }).catch(err => console.log('SW registration failed: ', err));
+
+                // Listen for controller change (this means the new SW has taken over)
+                let refreshing;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (refreshing) return;
+                    window.location.reload();
+                    refreshing = true;
+                });
             });
         }
     </script>

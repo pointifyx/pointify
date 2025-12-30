@@ -265,27 +265,34 @@ class POSModule {
         let itemCount = 0;
 
         this.cart.forEach(item => {
-            const price = item.price - (item.discount || 0);
-            const itemTotal = price * item.qty;
+            // New Logic: Discount is TOTAL off the line item
+            const totalLinePrice = (item.price * item.qty);
+            const discount = item.discount || 0;
+            const itemTotal = totalLinePrice - discount;
+
             subtotal += itemTotal;
             itemCount += item.qty;
 
             const div = document.createElement('div');
-            div.className = "flex items-center gap-2 bg-white p-2.5 rounded border border-stone-100 hover:border-red-200 shadow-sm transition group";
+            div.className = "flex items-center gap-3 bg-white p-3 rounded-lg border border-stone-200 hover:border-red-300 shadow-sm transition group";
             div.innerHTML = `
                 <div class="flex-1 min-w-0">
-                    <div class="text-sm font-bold text-slate-700 truncate">${item.name}</div>
-                    <div class="text-xs text-slate-500 font-mono">
-                        ${this.settings.currencySymbol}${item.price} x ${item.qty}
-                        ${item.discount ? `<span class="text-red-500 ml-1">(-${this.settings.currencySymbol}${item.discount})</span>` : ''}
+                    <div class="text-base font-bold text-slate-800 truncate mb-0.5">${item.name}</div>
+                    <div class="text-xs text-slate-500 font-mono flex items-center gap-2">
+                        <span class="bg-stone-100 px-1.5 py-0.5 rounded text-stone-600 font-bold">${item.qty} x ${this.settings.currencySymbol}${item.price}</span>
+                        ${item.discount ? `<span class="bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-bold border border-red-100">-${this.settings.currencySymbol}${item.discount.toFixed(2)} Off</span>` : ''}
                     </div>
                 </div>
-                <div class="font-bold text-sm text-red-600 w-16 text-right font-mono">${this.settings.currencySymbol}${itemTotal.toFixed(2)}</div>
+                <div class="font-bold text-base text-slate-900 w-20 text-right font-mono">${this.settings.currencySymbol}${itemTotal.toFixed(2)}</div>
                 
-                <div class="flex items-center gap-1 ml-2 transition">
-                     <button class="w-6 h-6 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold btn-discount" title="Add Discount">%</button>
-                     <button class="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 text-slate-600 flex items-center justify-center text-xs btn-minus font-bold">-</button>
-                     <button class="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 text-slate-600 flex items-center justify-center text-xs btn-plus font-bold">+</button>
+                <div class="flex items-center gap-2 ml-2">
+                     <button class="w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 flex items-center justify-center text-sm font-bold btn-discount transition transform active:scale-95" title="Add Discount">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
+                     </button>
+                     <div class="flex items-center bg-stone-100 rounded-lg p-1 gap-1 border border-stone-200">
+                        <button class="w-8 h-8 rounded-md bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-stone-200 hover:border-red-200 flex items-center justify-center text-lg btn-minus font-bold transition shadow-sm active:scale-95">-</button>
+                        <button class="w-8 h-8 rounded-md bg-white hover:bg-green-50 text-slate-600 hover:text-green-600 border border-stone-200 hover:border-green-200 flex items-center justify-center text-lg btn-plus font-bold transition shadow-sm active:scale-95">+</button>
+                     </div>
                 </div>
             `;
 
@@ -323,7 +330,12 @@ class POSModule {
     }
 
     promptDiscount(item) {
-        const discountStr = prompt(`Enter discount amount for ${item.name} (Max: ${(item.price - (item.costPrice || 0) - 1).toFixed(2)}):`, item.discount || 0);
+        const costPerItem = item.costPrice || 0;
+        const totalLinePrice = item.price * item.qty;
+        const totalLineCost = costPerItem * item.qty;
+        const maxDiscount = totalLinePrice - totalLineCost - 1; // Leave 1 unit profit buffer? or just > cost
+
+        const discountStr = prompt(`Enter TOTAL discount for ${item.qty}x ${item.name} (Max: ${maxDiscount.toFixed(2)}):`, item.discount || 0);
         if (discountStr === null) return;
 
         const discount = parseFloat(discountStr);
@@ -332,12 +344,14 @@ class POSModule {
             return;
         }
 
-        // Validate: Price - Discount > Cost Price
-        // Assuming we want at least 1 unit of currency profit or just > cost
-        // User Requirement: "cant make discount of lessthan or equal the cost of item" -> Price - Discount > Cost
-        const cost = item.costPrice || 0;
-        if ((item.price - discount) <= cost) {
-            window.showToast(`Discount too high! Price must be greater than Cost (${this.settings.currencySymbol}${cost})`, 'error');
+        // Validate: (Price * Qty) - Discount > (Cost * Qty)
+        // User Requirement: "cant make discount of lessthan or equal the cost of item" (applied to total now)
+        const costPerItem = item.costPrice || 0;
+        const totalLinePrice = item.price * item.qty;
+        const totalLineCost = costPerItem * item.qty;
+
+        if ((totalLinePrice - discount) <= totalLineCost) {
+            window.showToast(`Discount too high! Selling price must be greater than Cost (${this.settings.currencySymbol}${totalLineCost.toFixed(2)})`, 'error');
             return;
         }
 
@@ -417,7 +431,11 @@ class POSModule {
 
     async processCheckout() {
         // Recalculate total to be safe
-        const total = this.cart.reduce((sum, item) => sum + ((item.price - (item.discount || 0)) * item.qty), 0);
+        const total = this.cart.reduce((sum, item) => {
+            const lineTotal = (item.price * item.qty) - (item.discount || 0);
+            return sum + lineTotal;
+        }, 0);
+
         const customerName = document.getElementById('customer-name').value.trim() || 'Walk-in Customer';
 
         // Get Payment Method
@@ -458,8 +476,8 @@ class POSModule {
 
         const itemsHtml = sale.items.map(item => {
             const originalPrice = (item.price * item.qty).toFixed(2);
-            const discountAmt = item.discount ? (item.discount * item.qty).toFixed(2) : '0.00';
-            const finalPrice = ((item.price - (item.discount || 0)) * item.qty).toFixed(2);
+            const discountAmt = item.discount ? item.discount.toFixed(2) : '0.00';
+            const finalPrice = ((item.price * item.qty) - (item.discount || 0)).toFixed(2);
 
             return `
             <div style="margin-bottom: 4px; border-bottom: 1px dotted #ddd; padding-bottom: 2px;">
