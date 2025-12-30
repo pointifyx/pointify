@@ -408,7 +408,7 @@ class ReportsModule {
                     <td class="p-3 text-center text-slate-600 align-middle">${item.qty}x</td>
                     <td class="p-3 text-right text-slate-600 font-mono align-middle">${this.currencySymbol}${unitPrice.toFixed(2)}</td>
                     <td class="p-3 text-right text-red-500 font-mono align-middle">${discount > 0 ? this.currencySymbol + discount.toFixed(2) : '-'}</td>
-                    <td class="p-3 text-right text-slate-800 font-bold font-mono align-middle">${this.settings.currencySymbol || '$'}${lineTotal.toFixed(2)}</td>
+                    <td class="p-3 text-right text-slate-800 font-bold font-mono align-middle">${this.currencySymbol || '$'}${lineTotal.toFixed(2)}</td>
                 `;
                 tbody.appendChild(tr);
             });

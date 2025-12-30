@@ -253,6 +253,18 @@ class POSModule {
             window.showToast('Max stock reached', 'error');
         } else {
             item.qty = newQty;
+
+            // Integrity Check: Ensure discount doesn't exceed profit margin (Selling below cost)
+            const costPerItem = item.costPrice || 0;
+            const totalLinePrice = item.price * item.qty;
+            const totalLineCost = costPerItem * item.qty;
+
+            if (item.discount && (totalLinePrice - item.discount) <= totalLineCost) {
+                const maxDiscount = Math.max(0, totalLinePrice - totalLineCost - 1); // Ensure at least 1 unit profit
+                item.discount = maxDiscount;
+                window.showToast(`Discount adjusted to protection limit`, 'info');
+            }
+
             this.renderCart();
         }
     }
@@ -346,9 +358,8 @@ class POSModule {
 
         // Validate: (Price * Qty) - Discount > (Cost * Qty)
         // User Requirement: "cant make discount of lessthan or equal the cost of item" (applied to total now)
-        const costPerItem = item.costPrice || 0;
-        const totalLinePrice = item.price * item.qty;
-        const totalLineCost = costPerItem * item.qty;
+        // Validate: (Price * Qty) - Discount > (Cost * Qty)
+        // User Requirement: "cant make discount of lessthan or equal the cost of item" (applied to total now)
 
         if ((totalLinePrice - discount) <= totalLineCost) {
             window.showToast(`Discount too high! Selling price must be greater than Cost (${this.settings.currencySymbol}${totalLineCost.toFixed(2)})`, 'error');
