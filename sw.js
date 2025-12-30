@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pointify-v7';
+const CACHE_NAME = 'pointify-v1767108678';
 const CORE_ASSETS = [
   './',
   './index.html',
