@@ -30,7 +30,14 @@ class ReportsModule {
                         <span class="text-xs text-slate-500 font-medium" id="report-period-label">All Time</span>
                      </div>
                      
-                     <div class="flex flex-wrap gap-2">
+                     <div class="flex flex-wrap gap-2 items-center">
+                        <div class="relative">
+                            <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <input type="text" id="report-item-search" placeholder="Search Item..." class="w-40 md:w-56 bg-stone-50 border border-stone-200 rounded-lg pl-9 pr-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-red-500 transition">
+                        </div>
+
+                        <div class="h-8 w-px bg-stone-200 mx-2"></div>
+
                         <div class="flex bg-stone-100 rounded-lg p-1">
                             <button data-filter="today" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition text-slate-600">Today</button>
                             <button data-filter="week" class="filter-btn px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition text-slate-600">This Week</button>
@@ -167,6 +174,17 @@ class ReportsModule {
             });
         });
 
+        // Search Input Listener
+        const searchInput = document.getElementById('report-item-search');
+        let debounce;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounce);
+            debounce = setTimeout(() => {
+                const currentFilter = document.querySelector('.filter-btn.text-red-600')?.dataset.filter || 'all';
+                this.generateReport(currentFilter);
+            }, 300);
+        });
+
         // Scope Toggle Listeners (Manager)
         document.querySelectorAll('.scope-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -191,6 +209,9 @@ class ReportsModule {
 
     async generateReport(filter = 'all') {
         const sales = await db.getAll('sales');
+        // Search Term
+        const itemSearch = document.getElementById('report-item-search').value.trim().toLowerCase();
+
         let filteredSales = sales;
 
         const now = new Date();
@@ -278,24 +299,74 @@ class ReportsModule {
 
         this.currentData = filteredSales;
 
-        // 2. Calculate Totals
-        const totalRevenue = filteredSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
-        const totalOrders = filteredSales.length;
+        // 2. Calculate Totals (With Item Filter)
+        let totalRevenue = 0;
+        let metric2Value = 0; // Net Profit or Items Sold
+        let totalOrders = 0;
 
-        // Metric 2 depends on view
-        let metric2Value = 0;
-        if (!isRestrictedView) {
-            metric2Value = filteredSales.reduce((sum, sale) => sum + (sale.netProfit || 0), 0);
-            document.getElementById('report-second-metric').textContent = `${this.currencySymbol}${metric2Value.toFixed(2)}`;
-        } else {
-            // Calculate Total Items Sold
-            metric2Value = filteredSales.reduce((sum, sale) => sum + sale.items.reduce((isum, i) => isum + i.qty, 0), 0);
-            document.getElementById('report-second-metric').textContent = metric2Value;
-        }
+        // Stats placeholders if item filter is on
+        let filteredStats = {};
+        const matchedOrders = new Set();
+
+        filteredSales.forEach(sale => {
+            let saleRevenue = 0;
+            let saleProfit = 0;
+            let saleItemsCount = 0;
+            let hasMatch = false;
+
+            sale.items.forEach(item => {
+                // SEARCH FILTER LOGIC
+                if (itemSearch && !item.name.toLowerCase().includes(itemSearch)) {
+                    return; // Skip this item line
+                }
+
+                hasMatch = true;
+
+                // Calculations
+                const itemTotal = (item.price * item.qty) - (item.discount || 0);
+                const itemCost = (item.costPrice || 0) * item.qty;
+                const itemProfit = itemTotal - itemCost;
+
+                saleRevenue += itemTotal;
+                saleProfit += itemProfit;
+                saleItemsCount += item.qty;
+
+                // Track Employee performance for THIS item
+                const cashier = sale.cashier || 'Unknown';
+                if (!filteredStats[cashier]) filteredStats[cashier] = { orders: 0, items: 0, revenue: 0 };
+
+                filteredStats[cashier].items += item.qty;
+                filteredStats[cashier].revenue += itemTotal;
+            });
+
+            if (hasMatch) {
+                totalRevenue += saleRevenue;
+                // Metric 2 Logic
+                if (!isRestrictedView) {
+                    metric2Value += saleProfit;
+                } else {
+                    metric2Value += saleItemsCount;
+                }
+                matchedOrders.add(sale.id);
+
+                // For employee stats, we only increment order count once per valid sale
+                if (filteredStats[sale.cashier]) {
+                    filteredStats[sale.cashier].orders++;
+                }
+            }
+        });
+
+        totalOrders = matchedOrders.size;
 
         // Apply to DOM
         document.getElementById('report-revenue').textContent = `${this.currencySymbol}${totalRevenue.toFixed(2)}`;
         document.getElementById('report-orders').textContent = totalOrders;
+
+        if (!isRestrictedView) {
+            document.getElementById('report-second-metric').textContent = `${this.currencySymbol}${metric2Value.toFixed(2)}`;
+        } else {
+            document.getElementById('report-second-metric').textContent = metric2Value;
+        }
 
         // 3. Payment Breakdown Calculation
         const paymentStats = {
@@ -320,7 +391,10 @@ class ReportsModule {
 
         // Render Summary
         const container = document.getElementById('payment-summary-container');
-        if (container) {
+        // Hide Payment Breakdown if searching for specific item to avoid confusion
+        if (itemSearch) {
+            if (container) container.classList.add('hidden');
+        } else if (container) {
             // Visibility: Only visible if NOT restricted, or if Manager wants to see it?
             // "i need the reports setion of manager and admin add the calcuter"
             if (isRestrictedView && !isManager) {
@@ -376,7 +450,11 @@ class ReportsModule {
             // Employee Stats: Visible for Admin OR Manager-All-Sales
             if (adminStatsContainer) {
                 adminStatsContainer.classList.remove('hidden');
-                this.renderEmployeeStats(filteredSales);
+                if (itemSearch) {
+                    this.renderEmployeeStatsFromObj(filteredStats);
+                } else {
+                    this.renderEmployeeStats(filteredSales);
+                }
             }
         }
 
@@ -386,6 +464,10 @@ class ReportsModule {
             const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
             sale.items.forEach(item => {
+                // FILTER TABLE ROWS
+                if (itemSearch && !item.name.toLowerCase().includes(itemSearch)) {
+                    return;
+                }
                 const tr = document.createElement('tr');
                 const unitPrice = item.price;
                 // DISCOUNT FIX: Discount is now stored as TOTAL for the line, not per item.
@@ -414,6 +496,23 @@ class ReportsModule {
             });
         });
 
+    }
+
+    renderEmployeeStatsFromObj(stats) {
+        const tbody = document.getElementById('employee-stats-list');
+        tbody.innerHTML = '';
+
+        Object.keys(stats).forEach(cashier => {
+            const row = stats[cashier];
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-3 font-medium text-slate-700">${cashier}</td>
+                <td class="p-3 text-center text-slate-600">${row.orders}</td>
+                <td class="p-3 text-center text-slate-600">${row.items}</td>
+                <td class="p-3 text-right font-bold text-slate-800">${this.currencySymbol}${row.revenue.toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
     renderEmployeeStats(sales) {
