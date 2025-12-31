@@ -430,7 +430,12 @@ class ReportsModule {
         tbody.innerHTML = '';
 
         // Sort sales by date first
-        const sortedSales = filteredSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+        let sortedSales = filteredSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Fix: If searching, only show sales that contained the item in the table list
+        if (itemSearch) {
+            sortedSales = sortedSales.filter(s => matchedOrders.has(s.id));
+        }
 
         // Flatten to Line Items for Table Display
         // We want 100 line items max to prevent lag, or maybe 50 sales worth? 
