@@ -14,7 +14,12 @@ class SettingsModule {
             mpesaPaybill: '',
             mpesaAccount: '',
             mpesaBuyGoods: '',
+            // Kenya (M-Pesa)
+            mpesaPaybill: '',
+            mpesaAccount: '',
+            mpesaBuyGoods: '',
             mpesaAgent: '',
+            mpesaStoreNumber: '', // New Field for Withdrawal Store No
 
             // Somalia (EVC, Jeeb, e-Dahab, Salaam)
             somaliaEVC: '',
@@ -72,8 +77,22 @@ class SettingsModule {
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                                <label class="block text-sm font-bold text-slate-500 mb-1">Currency Symbol</label>
-                                <input type="text" id="setting-currency-symbol" value="${this.config.currencySymbol}" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none font-medium">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 mb-1">Currency</label>
+                                <select id="setting-currency-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none font-medium">
+                                    <option value="USD|$" ${this.config.currencyCode === 'USD' ? 'selected' : ''}>USD ($)</option>
+                                    <option value="KES|Ksh" ${this.config.currencyCode === 'KES' ? 'selected' : ''}>Kenya Shilling (Ksh)</option>
+                                    <option value="UGX|USh" ${this.config.currencyCode === 'UGX' ? 'selected' : ''}>Uganda Shilling (USh)</option>
+                                    <option value="TZS|TSh" ${this.config.currencyCode === 'TZS' ? 'selected' : ''}>Tanzania Shilling (TSh)</option>
+                                    <option value="SOS|Ssh" ${this.config.currencyCode === 'SOS' ? 'selected' : ''}>Somali Shilling (Ssh)</option>
+                                    <option value="EUR|€" ${this.config.currencyCode === 'EUR' ? 'selected' : ''}>Euro (€)</option>
+                                    <option value="GBP|£" ${this.config.currencyCode === 'GBP' ? 'selected' : ''}>British Pound (£)</option>
+                                    <option value="Custom|Custom" ${(this.config.currencyCode !== 'USD' && this.config.currencyCode !== 'KES' && this.config.currencyCode !== 'UGX' && this.config.currencyCode !== 'TZS' && this.config.currencyCode !== 'SOS' && this.config.currencyCode !== 'EUR' && this.config.currencyCode !== 'GBP') ? 'selected' : ''}>Custom</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label class="block text-sm font-bold text-slate-500 mb-1">Symbol (Auto)</label>
+                                <input type="text" id="setting-currency-symbol" value="${this.config.currencySymbol}" class="w-full bg-slate-100 border border-slate-200 rounded-lg p-3 text-slate-600 outline-none font-medium" readonly>
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-slate-500 mb-1">Country</label>
@@ -86,10 +105,10 @@ class SettingsModule {
                             </div>
                         </div>
                         
-                         <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-bold text-slate-500 mb-1">Currency Code</label>
-                                <input type="text" id="setting-currency-code" value="${this.config.currencyCode}" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-red-500 outline-none font-medium">
+                                <input type="text" id="setting-currency-code" value="${this.config.currencyCode}" class="w-full bg-slate-100 border border-slate-200 rounded-lg p-3 text-slate-600 outline-none font-medium" readonly>
                             </div>
                         </div>
                         
@@ -109,7 +128,7 @@ class SettingsModule {
                                         <input type="text" id="setting-paybill-acc" value="${this.config.mpesaAccount || ''}" placeholder="e.g. Store123" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-3 gap-4">
                                     <div>
                                         <label class="block text-sm font-bold text-slate-500 mb-1">Buy Goods / Till No.</label>
                                         <input type="text" id="setting-buygoods" value="${this.config.mpesaBuyGoods || ''}" placeholder="e.g. 123456" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
@@ -117,6 +136,10 @@ class SettingsModule {
                                     <div>
                                         <label class="block text-sm font-bold text-slate-500 mb-1">Agent Number</label>
                                         <input type="text" id="setting-agent" value="${this.config.mpesaAgent || ''}" placeholder="e.g. 987654" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-500 mb-1">Store Number</label>
+                                        <input type="text" id="setting-store-no" value="${this.config.mpesaStoreNumber || ''}" placeholder="For Withdrawal" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
                                     </div>
                                 </div>
                             </div>
@@ -319,6 +342,12 @@ class SettingsModule {
                     const paybillAcc = getVal('setting-paybill-acc');
                     const buygoods = getVal('setting-buygoods');
                     const agent = getVal('setting-agent');
+                    const storeNo = getVal('setting-store-no');
+
+                    // VALIDATION: Agent & Store Number must be paired
+                    if ((agent && !storeNo) || (!agent && storeNo)) {
+                        throw new Error('Agent Number and Store Number must BOTH be filled or BOTH be empty.');
+                    }
 
                     // Somalia Values
                     const somEvc = getVal('setting-som-evc');
@@ -353,6 +382,7 @@ class SettingsModule {
                         db.put('settings', { key: 'mpesaAccount', value: paybillAcc }),
                         db.put('settings', { key: 'mpesaBuyGoods', value: buygoods }),
                         db.put('settings', { key: 'mpesaAgent', value: agent }),
+                        db.put('settings', { key: 'mpesaStoreNumber', value: storeNo }),
 
                         // Somalia
                         db.put('settings', { key: 'somaliaEVC', value: somEvc }),
@@ -480,6 +510,38 @@ class SettingsModule {
                 if (val === 'Kenya') document.getElementById('fields-kenya')?.classList.remove('hidden');
                 if (val === 'Somalia') document.getElementById('fields-somalia')?.classList.remove('hidden');
                 if (val === 'Uganda') document.getElementById('fields-uganda')?.classList.remove('hidden');
+            });
+        }
+
+        // Currency Selector Logic
+        const currencySelect = document.getElementById('setting-currency-select');
+        const symInput = document.getElementById('setting-currency-symbol');
+        const codeInput = document.getElementById('setting-currency-code');
+
+        if (currencySelect) {
+            currencySelect.addEventListener('change', (e) => {
+                const val = e.target.value;
+                if (val === 'Custom|Custom') {
+                    symInput.readOnly = false;
+                    codeInput.readOnly = false;
+                    symInput.value = '';
+                    codeInput.value = '';
+                    symInput.classList.remove('bg-slate-100', 'text-slate-600');
+                    codeInput.classList.remove('bg-slate-100', 'text-slate-600');
+                    symInput.classList.add('bg-white', 'text-slate-800');
+                    codeInput.classList.add('bg-white', 'text-slate-800');
+                    symInput.focus();
+                } else {
+                    const [code, sym] = val.split('|');
+                    symInput.value = sym;
+                    codeInput.value = code;
+                    symInput.readOnly = true;
+                    codeInput.readOnly = true;
+                    symInput.classList.add('bg-slate-100', 'text-slate-600');
+                    codeInput.classList.add('bg-slate-100', 'text-slate-600');
+                    symInput.classList.remove('bg-white', 'text-slate-800');
+                    codeInput.classList.remove('bg-white', 'text-slate-800');
+                }
             });
         }
     }

@@ -77,8 +77,8 @@ class PointifyDB {
             const db = await this.getDB();
             const userCount = await this.count('users');
             if (userCount === 0) {
-                // Default Credentials: Admin / 123Admin
-                await this.add('users', { username: 'Admin', password: '123Admin', role: 'admin', name: 'Super Admin' });
+                // Default Credentials: Root / Root010
+                await this.add('users', { username: 'Root', password: 'Root010', role: 'admin', name: 'System Root' });
                 console.log("Seeded Default Admin User");
             }
         } catch (e) {

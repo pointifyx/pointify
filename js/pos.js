@@ -545,7 +545,7 @@ class POSModule {
                 <div style="text-align: center; margin-top: 15px; font-size: 10px;">
                     Thank you for your shopping!
                      <div style="margin-top: 5px; font-size: 8px; color: #888;">Powered by Pointify Inc</div>
-                    <div style="font-weight: bold; font-size: 10px; color: #000;">Contact Us +254791262422</div>
+                    <div style="font-weight: bold; font-size: 12px; color: #000; margin-top: 4px;">::Need the sofware Contuct us +254791262422</div>
                 </div>
             </div>
             
@@ -571,7 +571,12 @@ class POSModule {
             if (s.mpesaPaybill) html += `<div>Paybill: <b>${s.mpesaPaybill}</b></div>`;
             if (s.mpesaAccount) html += `<div>Account: <b>${s.mpesaAccount}</b></div>`;
             if (s.mpesaBuyGoods) html += `<div>Buy Goods: <b>${s.mpesaBuyGoods}</b></div>`;
-            if (s.mpesaAgent) html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
+            if (s.mpesaAgent && s.mpesaStoreNumber) {
+                html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
+                html += `<div>Store No: <b>${s.mpesaStoreNumber}</b></div>`;
+            } else if (s.mpesaAgent) {
+                html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
+            }
         }
         else if (method === 'EVC Plus' && s.somaliaEVC) html += `<div>EVC+: <b>${s.somaliaEVC}</b></div>`;
         else if (method === 'Jeeb' && s.somaliaJeeb) html += `<div>Jeeb: <b>${s.somaliaJeeb}</b></div>`;
