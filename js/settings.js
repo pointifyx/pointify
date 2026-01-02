@@ -117,31 +117,57 @@ class SettingsModule {
                             <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">Electronic Money Configuration</h3>
                             
                             <!-- KENYA -->
-                            <div id="fields-kenya" class="country-fields ${this.config.storeCountry !== 'Kenya' ? 'hidden' : ''}">
-                                <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div id="fields-kenya" class="country-fields ${this.config.storeCountry !== 'Kenya' ? 'hidden' : ''} space-y-6">
+                                
+                                <!-- 1. Buy Goods Section -->
+                                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                    <h4 class="font-bold text-green-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                                        Option 1: Buy Goods (Till Number)
+                                    </h4>
                                     <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Paybill Number</label>
-                                        <input type="text" id="setting-paybill" value="${this.config.mpesaPaybill || ''}" placeholder="e.g. 247247" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Account No. (For Paybill)</label>
-                                        <input type="text" id="setting-paybill-acc" value="${this.config.mpesaAccount || ''}" placeholder="e.g. Store123" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Buy Goods / Till No.</label>
-                                        <input type="text" id="setting-buygoods" value="${this.config.mpesaBuyGoods || ''}" placeholder="e.g. 123456" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Agent Number</label>
-                                        <input type="text" id="setting-agent" value="${this.config.mpesaAgent || ''}" placeholder="e.g. 987654" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Store Number</label>
-                                        <input type="text" id="setting-store-no" value="${this.config.mpesaStoreNumber || ''}" placeholder="For Withdrawal" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                                        <label class="block text-xs font-bold text-green-700 mb-1">Buy Goods / Till No.</label>
+                                        <input type="text" id="setting-buygoods" value="${this.config.mpesaBuyGoods || ''}" placeholder="e.g. 123456" class="w-full bg-white border border-green-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium placeholder-green-300">
                                     </div>
                                 </div>
+
+                                <!-- 2. Paybill Section -->
+                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <h4 class="font-bold text-blue-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                        Option 2: Paybill
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-blue-700 mb-1">Paybill Number</label>
+                                            <input type="text" id="setting-paybill" value="${this.config.mpesaPaybill || ''}" placeholder="e.g. 247247" class="w-full bg-white border border-blue-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium placeholder-blue-300">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-blue-700 mb-1">Account No.</label>
+                                            <input type="text" id="setting-paybill-acc" value="${this.config.mpesaAccount || ''}" placeholder="e.g. Store123" class="w-full bg-white border border-blue-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium placeholder-blue-300">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Withdrawal Section -->
+                                <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                                    <h4 class="font-bold text-purple-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                        Option 3: Agency Withdrawal
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-purple-700 mb-1">Agent Number</label>
+                                            <input type="text" id="setting-agent" value="${this.config.mpesaAgent || ''}" placeholder="e.g. 987654" class="w-full bg-white border border-purple-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none font-medium placeholder-purple-300">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-purple-700 mb-1">Store Number</label>
+                                            <input type="text" id="setting-store-no" value="${this.config.mpesaStoreNumber || ''}" placeholder="For Withdrawal" class="w-full bg-white border border-purple-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none font-medium placeholder-purple-300">
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-purple-600 mt-2 italic">* Both fields required for Agent Withdrawal</p>
+                                </div>
+
                             </div>
 
                             <!-- SOMALIA -->
