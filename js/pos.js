@@ -545,7 +545,7 @@ class POSModule {
                 <div style="text-align: center; margin-top: 15px; font-size: 10px;">
                     Thank you for your shopping!
                      <div style="margin-top: 5px; font-size: 8px; color: #888;">Powered by Pointify Inc</div>
-                    <div style="font-weight: bold; font-size: 12px; color: #000; margin-top: 4px;">::Need the sofware Contuct us +254791262422</div>
+                    <div style="font-weight: bold; font-size: 10px; color: #000; margin-top: 4px;">Need the sofware Contuct us +254791262422</div>
                 </div>
             </div>
             
