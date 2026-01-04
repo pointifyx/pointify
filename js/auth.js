@@ -9,7 +9,7 @@ class AuthSystem {
     async init() {
         // Check session storage for quick reloads
         try {
-            const sessionUser = sessionStorage.getItem('pointify_user');
+            const sessionUser = sessionStorage.getItem('pointify_session_v1');
             if (sessionUser) {
                 this.currentUser = JSON.parse(sessionUser);
                 this.onLoginSuccess();
@@ -56,7 +56,7 @@ class AuthSystem {
             const user = await this.authenticate(usernameInput, passwordInput);
             if (user) {
                 this.currentUser = user;
-                sessionStorage.setItem('pointify_user', JSON.stringify(user));
+                sessionStorage.setItem('pointify_session_v1', JSON.stringify(user));
                 this.onLoginSuccess();
                 if (errorMsg) errorMsg.classList.add('hidden');
             } else {
@@ -106,7 +106,13 @@ class AuthSystem {
 
     logout() {
         this.currentUser = null;
-        sessionStorage.removeItem('pointify_user');
+        sessionStorage.removeItem('pointify_session_v1'); // Changed key to force logout for old users
+
+        // Reset POS State (Clear Cart)
+        if (window.posModule) {
+            window.posModule.reset();
+        }
+
         document.getElementById('app-shell').classList.add('hidden');
         document.getElementById('auth-screen').classList.remove('hidden');
 

@@ -372,6 +372,14 @@ class POSModule {
 
 
 
+    reset() {
+        this.cart = [];
+        this.renderCart();
+        const customerInput = document.getElementById('customer-name');
+        if (customerInput) customerInput.value = '';
+        console.log("POS State Reset");
+    }
+
     bindEvents() {
         // Search Listener
         const searchInput = document.getElementById('pos-search');
@@ -457,7 +465,7 @@ class POSModule {
             items: this.cart,
             total: total,
             customer: customerName,
-            cashier: JSON.parse(sessionStorage.getItem('pointify_user'))?.username || 'Unknown',
+            cashier: JSON.parse(sessionStorage.getItem('pointify_session_v1'))?.username || 'Unknown',
             paymentMethod: paymentMethod
         };
 

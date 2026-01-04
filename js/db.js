@@ -77,9 +77,28 @@ class PointifyDB {
             const db = await this.getDB();
             const userCount = await this.count('users');
             if (userCount === 0) {
-                // Default Credentials: Root / Root010
-                await this.add('users', { username: 'Root', password: 'Root010', role: 'admin', name: 'System Root' });
+                // Default Credentials: Super / super68
+                await this.add('users', { username: 'Super', password: 'super68', role: 'admin', name: 'System Admin' });
                 console.log("Seeded Default Admin User");
+            } else {
+                // FORCE PASSWORD UPDATE FOR EXISTING ADMINS
+                // Security Requirement: Update legacy admins to new standard
+                const allUsers = await this.getAll('users');
+                const admin = allUsers.find(u => u.role === 'admin');
+                if (admin) {
+                    // Check if password needs update (logic: just force it to super68 for the primary admin to ensure access control)
+                    // User requested: "change the password the whole password even push the ones using now"
+                    if (admin.password !== 'super68') {
+                        console.log("Migrating Admin Password...");
+                        admin.password = 'super68';
+                        // admin.username = 'Super'; // Optional: keep username if they customized it? User said "change the pasword to uersame:Super password;super68" -> implies changing username too.
+                        // Let's force consistency as requested.
+                        if (admin.username === 'Root') admin.username = 'Super';
+
+                        await this.put('users', admin);
+                        console.log("Admin credentials enforced.");
+                    }
+                }
             }
         } catch (e) {
             console.error("Seeding failed", e);
