@@ -14,10 +14,6 @@ class SettingsModule {
             mpesaPaybill: '',
             mpesaAccount: '',
             mpesaBuyGoods: '',
-            // Kenya (M-Pesa)
-            mpesaPaybill: '',
-            mpesaAccount: '',
-            mpesaBuyGoods: '',
             mpesaAgent: '',
             mpesaStoreNumber: '', // New Field for Withdrawal Store No
 
