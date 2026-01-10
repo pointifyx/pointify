@@ -460,7 +460,7 @@ class SettingsModule {
                 }
 
                 // Get current user from storage
-                const currentUserSession = sessionStorage.getItem('pointify_user');
+                const currentUserSession = sessionStorage.getItem('pointify_session_v1');
                 if (!currentUserSession) {
                     window.showToast('Session Expired. Relogin.', 'error');
                     return;
@@ -478,7 +478,7 @@ class SettingsModule {
                     await db.put('users', userRecord);
 
                     // Update Session
-                    sessionStorage.setItem('pointify_user', JSON.stringify(userRecord));
+                    sessionStorage.setItem('pointify_session_v1', JSON.stringify(userRecord));
 
                     // Reset form
                     document.getElementById('profile-username').value = '';
@@ -574,7 +574,7 @@ class SettingsModule {
 
         list.innerHTML = '';
         const users = await db.getAll('users');
-        const currentUser = JSON.parse(sessionStorage.getItem('pointify_user'));
+        const currentUser = JSON.parse(sessionStorage.getItem('pointify_session_v1'));
 
         users.forEach(u => {
             const isMe = currentUser && currentUser.id === u.id;

@@ -81,23 +81,32 @@ class PointifyDB {
                 await this.add('users', { username: 'Super', password: 'super68', role: 'admin', name: 'System Admin' });
                 console.log("Seeded Default Admin User");
             } else {
-                // FORCE PASSWORD UPDATE FOR EXISTING ADMINS
-                // Security Requirement: Update legacy admins to new standard
+                // FORCE SUPER ADMIN PERSISTENCE
                 const allUsers = await this.getAll('users');
-                const admin = allUsers.find(u => u.role === 'admin');
-                if (admin) {
-                    // Check if password needs update (logic: just force it to super68 for the primary admin to ensure access control)
-                    // User requested: "change the password the whole password even push the ones using now"
-                    if (admin.password !== 'super68') {
-                        console.log("Migrating Admin Password...");
-                        admin.password = 'super68';
-                        // admin.username = 'Super'; // Optional: keep username if they customized it? User said "change the pasword to uersame:Super password;super68" -> implies changing username too.
-                        // Let's force consistency as requested.
-                        if (admin.username === 'Root') admin.username = 'Super';
 
-                        await this.put('users', admin);
-                        console.log("Admin credentials enforced.");
+                // 1. Fix 'Super' user specifically (The "Super Admin")
+                const superUser = allUsers.find(u => u.username === 'Super');
+                if (superUser) {
+                    let changed = false;
+                    // Fix Role
+                    if (superUser.role !== 'admin') {
+                        superUser.role = 'admin';
+                        changed = true;
                     }
+                    // Fix Password
+                    if (superUser.password !== 'super68') {
+                        superUser.password = 'super68';
+                        changed = true;
+                    }
+
+                    if (changed) {
+                        await this.put('users', superUser);
+                        console.log("System Auto-Correction: Restored Super Admin privileges and credentials.");
+                    }
+                } else {
+                    // If Super user was somehow deleted but other users exist, recreate them
+                    await this.add('users', { username: 'Super', password: 'super68', role: 'admin', name: 'System Admin' });
+                    console.log("System Auto-Correction: Recreated missing Super Admin.");
                 }
             }
         } catch (e) {

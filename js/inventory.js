@@ -150,7 +150,7 @@ class InventoryModule {
                 : `<div class="w-10 h-10 rounded bg-stone-100 flex items-center justify-center text-xs text-slate-400 font-bold">IMG</div>`;
 
             // Permissions Check
-            const user = JSON.parse(sessionStorage.getItem('pointify_user'));
+            const user = JSON.parse(sessionStorage.getItem('pointify_session_v1'));
             const isAdmin = user && user.role === 'admin';
             const isManager = user && user.role === 'manager';
 

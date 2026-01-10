@@ -237,7 +237,7 @@ class ReportsModule {
         }
 
         document.getElementById('report-period-label').textContent = label;
-        const user = JSON.parse(sessionStorage.getItem('pointify_user'));
+        const user = JSON.parse(sessionStorage.getItem('pointify_session_v1'));
         const isAdmin = user && user.role === 'admin';
         const isManager = user && user.role === 'manager';
 
