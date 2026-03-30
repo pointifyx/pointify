@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pointify-v1774885873'; // Updated for Security Patch
+const CACHE_NAME = 'pointify-v1774888311'; // Updated for Security Patch
 const CORE_ASSETS = [
   './',
   './index.html',
