@@ -17,7 +17,12 @@ class SettingsModule {
             mpesaAgent: '',
             mpesaStoreNumber: '', // New Field for Withdrawal Store No
 
-            // Somalia (EVC, Jeeb, e-Dahab, Salaam)
+            // Somalia (M-Pesa KSH or Local Payment Methods)
+            somaliaMpesaPaybill: '',
+            somaliaMpesaAccount: '',
+            somaliaMpesaBuyGoods: '',
+            somaliaMpesaAgent: '',
+            somaliaMpesaStoreNumber: '',
             somaliaEVC: '',
             somaliaJeeb: '',
             somaliaEdahab: '',
@@ -167,31 +172,83 @@ class SettingsModule {
                             </div>
 
                             <!-- SOMALIA -->
-                            <div id="fields-somalia" class="country-fields ${this.config.storeCountry !== 'Somalia' ? 'hidden' : ''}">
-                                <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div id="fields-somalia" class="country-fields ${this.config.storeCountry !== 'Somalia' ? 'hidden' : ''} space-y-6">
+                                
+                                <!-- 1. M-PESA (KSH) for Somalia -->
+                                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                    <h4 class="font-bold text-green-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                                        M-PESA KSH (Till Number)
+                                    </h4>
                                     <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">EVC Plus Number</label>
-                                        <input type="text" id="setting-som-evc" value="${this.config.somaliaEVC || ''}" placeholder="e.g. 0615..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Jeeb Number</label>
-                                        <input type="text" id="setting-som-jeeb" value="${this.config.somaliaJeeb || ''}" placeholder="Jeeb No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">e-Dahab Number</label>
-                                        <input type="text" id="setting-som-edahab" value="${this.config.somaliaEdahab || ''}" placeholder="e-Dahab No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Salaam Bank Account</label>
-                                        <input type="text" id="setting-som-salaam" value="${this.config.somaliaSalaam || ''}" placeholder="Account No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                        <label class="block text-xs font-bold text-green-700 mb-1">Buy Goods / Till No.</label>
+                                        <input type="text" id="setting-som-mpesa-buygoods" value="${this.config.somaliaMpesaBuyGoods || ''}" placeholder="e.g. 123456" class="w-full bg-white border border-green-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-green-500 outline-none font-medium placeholder-green-300">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-500 mb-1">Merchant Account</label>
-                                        <input type="text" id="setting-som-merchant" value="${this.config.somaliaMerchant || ''}" placeholder="Merchant ID" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+
+                                <!-- 2. M-PESA Paybill (KSH) -->
+                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <h4 class="font-bold text-blue-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                        M-PESA Paybill (KSH)
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-blue-700 mb-1">Paybill Number</label>
+                                            <input type="text" id="setting-som-mpesa-paybill" value="${this.config.somaliaMpesaPaybill || ''}" placeholder="e.g. 247247" class="w-full bg-white border border-blue-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium placeholder-blue-300">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-blue-700 mb-1">Account No.</label>
+                                            <input type="text" id="setting-som-mpesa-acc" value="${this.config.somaliaMpesaAccount || ''}" placeholder="e.g. Store123" class="w-full bg-white border border-blue-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium placeholder-blue-300">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. M-PESA Agent Withdrawal (KSH) -->
+                                <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                                    <h4 class="font-bold text-purple-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                        Agency Withdrawal (KSH)
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-purple-700 mb-1">Agent Number</label>
+                                            <input type="text" id="setting-som-mpesa-agent" value="${this.config.somaliaMpesaAgent || ''}" placeholder="e.g. 987654" class="w-full bg-white border border-purple-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none font-medium placeholder-purple-300">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-purple-700 mb-1">Store Number</label>
+                                            <input type="text" id="setting-som-mpesa-store-no" value="${this.config.somaliaMpesaStoreNumber || ''}" placeholder="For Withdrawal" class="w-full bg-white border border-purple-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none font-medium placeholder-purple-300">
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-purple-600 mt-2 italic">* Both fields required for Agent Withdrawal</p>
+                                </div>
+
+                                <!-- 4. Other Payment Methods -->
+                                <div class="border-t border-stone-100 pt-4 mt-2">
+                                    <h4 class="font-bold text-slate-700 mb-3 text-xs uppercase tracking-wide">Other Payment Methods (Optional)</h4>
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-500 mb-1">EVC Plus Number</label>
+                                            <input type="text" id="setting-som-evc" value="${this.config.somaliaEVC || ''}" placeholder="e.g. 0615..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-500 mb-1">Jeeb Number</label>
+                                            <input type="text" id="setting-som-jeeb" value="${this.config.somaliaJeeb || ''}" placeholder="Jeeb No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-500 mb-1">e-Dahab Number</label>
+                                            <input type="text" id="setting-som-edahab" value="${this.config.somaliaEdahab || ''}" placeholder="e-Dahab No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-500 mb-1">Salaam Bank Account</label>
+                                            <input type="text" id="setting-som-salaam" value="${this.config.somaliaSalaam || ''}" placeholder="Account No." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-500 mb-1">Merchant Account</label>
+                                            <input type="text" id="setting-som-merchant" value="${this.config.somaliaMerchant || ''}" placeholder="Merchant ID" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -371,7 +428,19 @@ class SettingsModule {
                         throw new Error('Agent Number and Store Number must BOTH be filled or BOTH be empty.');
                     }
 
-                    // Somalia Values
+                    // Somalia M-PESA (KSH) Values
+                    const somMpesaPaybill = getVal('setting-som-mpesa-paybill');
+                    const somMpesaAcc = getVal('setting-som-mpesa-acc');
+                    const somMpesaBuygoods = getVal('setting-som-mpesa-buygoods');
+                    const somMpesaAgent = getVal('setting-som-mpesa-agent');
+                    const somMpesaStoreNo = getVal('setting-som-mpesa-store-no');
+
+                    // VALIDATION: Somalia Agent & Store Number must be paired
+                    if ((somMpesaAgent && !somMpesaStoreNo) || (!somMpesaAgent && somMpesaStoreNo)) {
+                        throw new Error('Somalia Agent Number and Store Number must BOTH be filled or BOTH be empty.');
+                    }
+
+                    // Somalia Local Payment Methods
                     const somEvc = getVal('setting-som-evc');
                     const somJeeb = getVal('setting-som-jeeb');
                     const somEdahab = getVal('setting-som-edahab');
@@ -406,7 +475,14 @@ class SettingsModule {
                         db.put('settings', { key: 'mpesaAgent', value: agent }),
                         db.put('settings', { key: 'mpesaStoreNumber', value: storeNo }),
 
-                        // Somalia
+                        // Somalia M-PESA (KSH)
+                        db.put('settings', { key: 'somaliaMpesaPaybill', value: somMpesaPaybill }),
+                        db.put('settings', { key: 'somaliaMpesaAccount', value: somMpesaAcc }),
+                        db.put('settings', { key: 'somaliaMpesaBuyGoods', value: somMpesaBuygoods }),
+                        db.put('settings', { key: 'somaliaMpesaAgent', value: somMpesaAgent }),
+                        db.put('settings', { key: 'somaliaMpesaStoreNumber', value: somMpesaStoreNo }),
+
+                        // Somalia Local Methods
                         db.put('settings', { key: 'somaliaEVC', value: somEvc }),
                         db.put('settings', { key: 'somaliaJeeb', value: somJeeb }),
                         db.put('settings', { key: 'somaliaEdahab', value: somEdahab }),

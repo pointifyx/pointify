@@ -155,6 +155,11 @@ class POSModule {
                 methods.push({ id: 'MPESA', label: 'M-PESA', color: 'blue' });
             }
         } else if (country === 'Somalia') {
+            // Somalia can use M-PESA if currency is KES
+            if (s.currencyCode === 'KES' && (s.somaliaMpesaPaybill || s.somaliaMpesaBuyGoods || s.somaliaMpesaAgent)) {
+                methods.push({ id: 'MPESA', label: 'M-PESA', color: 'blue' });
+            }
+            // Somalia local payment methods
             if (s.somaliaEVC) methods.push({ id: 'EVC Plus', label: 'EVC+', color: 'blue' });
             if (s.somaliaJeeb) methods.push({ id: 'Jeeb', label: 'Jeeb', color: 'purple' });
             if (s.somaliaEdahab) methods.push({ id: 'e-Dahab', label: 'e-Dahab', color: 'yellow' });
