@@ -143,35 +143,44 @@ class POSModule {
         const containerParent = container.parentElement;
         // Ensure the parent label is visible if we have methods, or handled gracefully
 
-        const country = this.settings.storeCountry || 'Kenya';
-        const s = this.settings;
+        const country = this.settings?.storeCountry || 'Kenya'; // Safety check
+        const currencyCode = this.settings?.currencyCode || 'USD'; // Safety check
+        const s = this.settings || {}; // Safety check
         let methods = [];
 
-        // Always add CASH
+        // Always add CASH for all countries
         methods.push({ id: 'CASH', label: 'CASH', color: 'green' });
 
         if (country === 'Kenya') {
+            // Kenya M-PESA
             if (s.mpesaPaybill || s.mpesaBuyGoods || s.mpesaAgent) {
                 methods.push({ id: 'MPESA', label: 'M-PESA', color: 'blue' });
             }
         } else if (country === 'Somalia') {
-            // Somalia can use M-PESA if currency is KES
-            if (s.currencyCode === 'KES' && (s.somaliaMpesaPaybill || s.somaliaMpesaBuyGoods || s.somaliaMpesaAgent)) {
-                methods.push({ id: 'MPESA', label: 'M-PESA', color: 'blue' });
+            // FIX BUG #3: Improved Somalia M-PESA validation
+            // Show M-PESA if ANY option is configured (Till, Paybill, or Agent)
+            const hasSomaliaMpesaTill = s.currencyCode === 'KES' && s.somaliaMpesaBuyGoods;
+            const hasSomaliaMpesaPaybill = s.currencyCode === 'KES' && s.somaliaMpesaPaybill;
+            const hasSomaliaMpesaAgent = s.currencyCode === 'KES' && s.somaliaMpesaAgent && s.somaliaMpesaStoreNumber; // Require both
+            
+            if (hasSomaliaMpesaTill || hasSomaliaMpesaPaybill || hasSomaliaMpesaAgent) {
+                methods.push({ id: 'MPESA', label: 'M-PESA (KES)', color: 'blue' });
             }
-            // Somalia local payment methods
+            
+            // Somalia local payment methods - show if configured
             if (s.somaliaEVC) methods.push({ id: 'EVC Plus', label: 'EVC+', color: 'blue' });
             if (s.somaliaJeeb) methods.push({ id: 'Jeeb', label: 'Jeeb', color: 'purple' });
             if (s.somaliaEdahab) methods.push({ id: 'e-Dahab', label: 'e-Dahab', color: 'yellow' });
             if (s.somaliaSalaam) methods.push({ id: 'Salaam', label: 'Salaam', color: 'slate' });
             if (s.somaliaMerchant) methods.push({ id: 'Merchant', label: 'Merchant', color: 'red' });
         } else if (country === 'Uganda') {
-            methods.push({ id: 'CASH', label: 'CASH', color: 'green' }); // always show cash
+            // FIX BUG #2: Remove duplicate CASH (already added globally above)
+            // CASH already added above, just add electronic methods
             if (s.ugandaAirtel) methods.push({ id: 'Airtel Money', label: 'Airtel', color: 'red' });
             if (s.ugandaMTN) methods.push({ id: 'MTN MoMo', label: 'MTN', color: 'yellow' });
             if (s.ugandaOther) methods.push({ id: 'Other', label: 'Other', color: 'slate' });
         } else {
-            // Others/Default
+            // Others/Default - CASH already added
             methods.push({ id: 'Card', label: 'Card', color: 'blue' });
             methods.push({ id: 'Other', label: 'Other', color: 'slate' });
         }
@@ -185,6 +194,12 @@ class POSModule {
             'red': 'peer-checked:bg-red-50 peer-checked:text-red-700 peer-checked:border-red-200',
             'slate': 'peer-checked:bg-slate-50 peer-checked:text-slate-700 peer-checked:border-slate-200'
         };
+
+        // FIX: Only render if we have methods
+        if (methods.length === 0) {
+            container.innerHTML = '<div class="text-center text-xs text-red-600 py-2">⚠️ No payment methods configured. Go to Settings.</div>';
+            return;
+        }
 
         container.innerHTML = methods.map((m, index) => `
              <label class="cursor-pointer flex-1 min-w-[30%]">

@@ -506,6 +506,35 @@ class SettingsModule {
                     console.log('Settings Saved Successfully');
                     window.showToast('Settings Saved Successfully');
 
+                    // FIX BUG #1: Notify POS module to reload settings BEFORE page refresh
+                    if (window.posModule) {
+                        try {
+                            await window.posModule.loadSettings();
+                            window.posModule.renderPaymentButtons();
+                            console.log('✓ POS module updated with new settings');
+                        } catch (e) {
+                            console.error('Failed to update POS:', e);
+                        }
+                    }
+                    // Notify Inventory module
+                    if (window.inventoryModule) {
+                        try {
+                            await window.inventoryModule.loadSettings();
+                            console.log('✓ Inventory module updated with new settings');
+                        } catch (e) {
+                            console.error('Failed to update Inventory:', e);
+                        }
+                    }
+                    // Notify Reports module
+                    if (window.reports) {
+                        try {
+                            await window.reports.loadSettings();
+                            console.log('✓ Reports module updated with new settings');
+                        } catch (e) {
+                            console.error('Failed to update Reports:', e);
+                        }
+                    }
+
                     // Force UI Update
                     await this.init();
                     console.log('Settings re-initialized');
