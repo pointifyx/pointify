@@ -391,10 +391,9 @@ class ReportsModule {
 
         // Render Summary
         const container = document.getElementById('payment-summary-container');
-        // Hide Payment Breakdown if searching for specific item to avoid confusion
-        if (itemSearch) {
-            if (container) container.classList.add('hidden');
-        } else if (container) {
+        // FIX BUG-006: Keep payment summary visible even when searching (for administrative visibility)
+        // Don't hide the payment summary - it helps with analysis
+        if (container) {
             // Visibility: Only visible if NOT restricted, or if Manager wants to see it?
             // "i need the reports setion of manager and admin add the calcuter"
             if (isRestrictedView && !isManager) {
@@ -555,18 +554,20 @@ class ReportsModule {
             return;
         }
 
-        // CSV Header
+        // FIX BUG-004: Add currency symbol to CSV for clarity
+        // CSV Header - Include currency symbol
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Date,Order ID,Cashier,Payment Method,Items Count,Total,Net Profit\n";
+        csvContent += `Date,Order ID,Cashier,Payment Method,Items Count,Total (${this.currencySymbol}),Net Profit (${this.currencySymbol})\n`;
 
-        // CSV Rows
+        // CSV Rows - Add currency symbol to values
         this.currentData.forEach(row => {
             const d = new Date(row.date);
             const dateStr = d.toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(',', '');
 
             const items = row.items.reduce((acc, i) => acc + i.qty, 0);
             const payment = row.paymentMethod || 'CASH';
-            csvContent += `${dateStr},${row.id || 'N/A'},${row.cashier},${payment},${items},${row.total.toFixed(2)},${(row.netProfit || 0).toFixed(2)}\n`;
+            // Add currencySymbol to totals for clarity
+            csvContent += `${dateStr},${row.id || 'N/A'},${row.cashier},${payment},${items},${this.currencySymbol}${row.total.toFixed(2)},${this.currencySymbol}${(row.netProfit || 0).toFixed(2)}\n`;
         });
 
         // Download Trigger

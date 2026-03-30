@@ -5,6 +5,8 @@ class SettingsModule {
         this.container = document.getElementById('view-settings');
         this.config = {
             storeName: 'My Store',
+            storePhone: '', // NEW: Store phone number
+            storeAddress: '', // NEW: Store address
             currencySymbol: '$',
             currencyCode: 'USD',
             storeLogo: null, // Base64
@@ -654,7 +656,8 @@ class SettingsModule {
 
         users.forEach(u => {
             const isMe = currentUser && currentUser.id === u.id;
-            const isAdmin = u.username.toLowerCase() === 'admin';
+            // FIX BUG-001: Protect both 'admin' and 'Super' (the default system admin)
+            const isAdmin = u.username.toLowerCase() === 'admin' || u.username === 'Super';
             const row = document.createElement('tr');
 
             let actionHtml = '';

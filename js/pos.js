@@ -166,6 +166,7 @@ class POSModule {
             if (s.somaliaSalaam) methods.push({ id: 'Salaam', label: 'Salaam', color: 'slate' });
             if (s.somaliaMerchant) methods.push({ id: 'Merchant', label: 'Merchant', color: 'red' });
         } else if (country === 'Uganda') {
+            methods.push({ id: 'CASH', label: 'CASH', color: 'green' }); // always show cash
             if (s.ugandaAirtel) methods.push({ id: 'Airtel Money', label: 'Airtel', color: 'red' });
             if (s.ugandaMTN) methods.push({ id: 'MTN MoMo', label: 'MTN', color: 'yellow' });
             if (s.ugandaOther) methods.push({ id: 'Other', label: 'Other', color: 'slate' });
@@ -175,10 +176,20 @@ class POSModule {
             methods.push({ id: 'Other', label: 'Other', color: 'slate' });
         }
 
+        // FIX BUG-005: Fix Tailwind colors - dynamic classes don't work, use static mapping
+        const colorClasses = {
+            'green': 'peer-checked:bg-green-50 peer-checked:text-green-700 peer-checked:border-green-200',
+            'blue': 'peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200',
+            'yellow': 'peer-checked:bg-yellow-50 peer-checked:text-yellow-700 peer-checked:border-yellow-200',
+            'purple': 'peer-checked:bg-purple-50 peer-checked:text-purple-700 peer-checked:border-purple-200',
+            'red': 'peer-checked:bg-red-50 peer-checked:text-red-700 peer-checked:border-red-200',
+            'slate': 'peer-checked:bg-slate-50 peer-checked:text-slate-700 peer-checked:border-slate-200'
+        };
+
         container.innerHTML = methods.map((m, index) => `
              <label class="cursor-pointer flex-1 min-w-[30%]">
                  <input type="radio" name="payment-method" value="${m.id}" ${index === 0 ? 'checked' : ''} class="peer sr-only">
-                 <div class="text-center py-2 border border-stone-200 rounded text-xs font-bold text-slate-600 peer-checked:bg-${m.color}-50 peer-checked:text-${m.color}-700 peer-checked:border-${m.color}-200 transition hover:bg-stone-50">
+                 <div class="text-center py-2 border border-stone-200 rounded text-xs font-bold text-slate-600 ${colorClasses[m.color] || colorClasses['slate']} transition hover:bg-stone-50">
                      ${m.label}
                  </div>
              </label>
@@ -580,15 +591,32 @@ class POSModule {
         const s = this.settings;
         let html = '';
 
+        // FIX BUG-002: Check country to show correct M-PESA details
         if (method === 'MPESA') {
-            if (s.mpesaPaybill) html += `<div>Paybill: <b>${s.mpesaPaybill}</b></div>`;
-            if (s.mpesaAccount) html += `<div>Account: <b>${s.mpesaAccount}</b></div>`;
-            if (s.mpesaBuyGoods) html += `<div>Buy Goods: <b>${s.mpesaBuyGoods}</b></div>`;
-            if (s.mpesaAgent && s.mpesaStoreNumber) {
-                html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
-                html += `<div>Store No: <b>${s.mpesaStoreNumber}</b></div>`;
-            } else if (s.mpesaAgent) {
-                html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
+            const country = s.storeCountry || 'Kenya';
+            
+            if (country === 'Somalia') {
+                // Use Somalia M-PESA fields
+                if (s.somaliaMpesaBuyGoods) html += `<div>Buy Goods: <b>${s.somaliaMpesaBuyGoods}</b></div>`;
+                if (s.somaliaMpesaPaybill) html += `<div>Paybill: <b>${s.somaliaMpesaPaybill}</b></div>`;
+                if (s.somaliaMpesaAccount) html += `<div>Account: <b>${s.somaliaMpesaAccount}</b></div>`;
+                if (s.somaliaMpesaAgent && s.somaliaMpesaStoreNumber) {
+                    html += `<div>Agent No: <b>${s.somaliaMpesaAgent}</b></div>`;
+                    html += `<div>Store No: <b>${s.somaliaMpesaStoreNumber}</b></div>`;
+                } else if (s.somaliaMpesaAgent) {
+                    html += `<div>Agent No: <b>${s.somaliaMpesaAgent}</b></div>`;
+                }
+            } else {
+                // Use Kenya M-PESA fields
+                if (s.mpesaPaybill) html += `<div>Paybill: <b>${s.mpesaPaybill}</b></div>`;
+                if (s.mpesaAccount) html += `<div>Account: <b>${s.mpesaAccount}</b></div>`;
+                if (s.mpesaBuyGoods) html += `<div>Buy Goods: <b>${s.mpesaBuyGoods}</b></div>`;
+                if (s.mpesaAgent && s.mpesaStoreNumber) {
+                    html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
+                    html += `<div>Store No: <b>${s.mpesaStoreNumber}</b></div>`;
+                } else if (s.mpesaAgent) {
+                    html += `<div>Agent No: <b>${s.mpesaAgent}</b></div>`;
+                }
             }
         }
         else if (method === 'EVC Plus' && s.somaliaEVC) html += `<div>EVC+: <b>${s.somaliaEVC}</b></div>`;
